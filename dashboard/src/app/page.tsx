@@ -34,6 +34,9 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-transparent to-blue-50 dark:from-blue-950/20 dark:via-transparent dark:to-blue-950/20" />
         <div className="relative max-w-6xl mx-auto px-4 md:px-8 text-center">
           <div className="mx-auto max-w-3xl">
+            <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-4 tracking-wide uppercase">
+              RevenueCat, but for App Support
+            </p>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
               <span className="text-blue-600">AI-Powered</span> Customer Support for Your App
             </h1>
