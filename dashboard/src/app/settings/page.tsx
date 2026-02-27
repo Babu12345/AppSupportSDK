@@ -164,7 +164,7 @@ export default function SettingsPage() {
                   <h3 className="font-medium text-gray-900 dark:text-white text-sm">Add the package to your Xcode project</h3>
                 </div>
                 <code className="block bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 px-4 py-2.5 rounded-lg font-mono text-sm text-gray-700 dark:text-slate-300">
-                  https://github.com/Babu12345/AppSupportSDK
+                  https://github.com/Babu12345/SupportKit
                 </code>
               </div>
 
