@@ -27,6 +27,7 @@ app.use('/v1/organizations', organizationRouter);
 // Error handler
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err.message);
+  console.error('Stack:', err.stack);
   res.status(500).json({ error: 'Internal server error' });
 });
 
