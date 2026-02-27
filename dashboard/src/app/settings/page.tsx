@@ -74,7 +74,7 @@ export default function SettingsPage() {
 
       <div className="space-y-6">
         {/* Organizations Section */}
-        <div className="bg-white rounded-xl border">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b flex justify-between items-center">
             <h2 className="font-semibold text-gray-900">Organizations</h2>
             <button
@@ -119,7 +119,7 @@ export default function SettingsPage() {
 
         {/* Current API Key Section */}
         {currentOrg && (
-          <div className="bg-white rounded-xl border">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b">
               <h2 className="font-semibold text-gray-900">API Key</h2>
             </div>
@@ -148,7 +148,7 @@ export default function SettingsPage() {
         )}
 
         {/* iOS Integration */}
-        <div className="bg-white rounded-xl border">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b">
             <h2 className="font-semibold text-gray-900">iOS Integration</h2>
           </div>

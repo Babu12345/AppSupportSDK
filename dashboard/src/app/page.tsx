@@ -32,7 +32,7 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-xl border p-6">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -48,7 +48,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border p-6">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -63,7 +63,7 @@ export default function DashboardPage() {
           <p className="text-xs text-gray-400">Coming soon</p>
         </div>
 
-        <div className="bg-white rounded-xl border p-6">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,7 +80,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Start */}
-      <div className="bg-white rounded-xl border">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <div className="px-6 py-4 border-b">
           <h2 className="font-semibold text-gray-900">Quick Start</h2>
         </div>
