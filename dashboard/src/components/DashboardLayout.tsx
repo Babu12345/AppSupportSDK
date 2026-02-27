@@ -18,6 +18,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     async function checkAuth() {
@@ -80,8 +81,24 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         organizations={organizations}
         currentOrg={currentOrg}
         onSwitchOrg={switchOrganization}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
-      <main className="flex-1 p-8">{children}</main>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile header */}
+        <header className="md:hidden sticky top-0 z-30 h-14 flex items-center gap-3 px-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-1.5 -ml-1 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+          <span className="font-bold text-gray-900 dark:text-white">SupportKit</span>
+        </header>
+
+        <main className="flex-1 p-4 md:p-8">{children}</main>
+      </div>
     </div>
   );
 }
