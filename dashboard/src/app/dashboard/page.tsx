@@ -2,18 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { getKnowledgeSources, KnowledgeSource } from '@/lib/api';
+import { getKnowledgeSources, getUsageStats, KnowledgeSource, UsageStats } from '@/lib/api';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const [sources, setSources] = useState<KnowledgeSource[]>([]);
+  const [stats, setStats] = useState<UsageStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const data = await getKnowledgeSources();
-        setSources(data.sources);
+        const [knowledgeData, usageData] = await Promise.all([
+          getKnowledgeSources(),
+          getUsageStats(),
+        ]);
+        setSources(knowledgeData.sources);
+        setStats(usageData);
       } catch (error) {
         console.error('Failed to load data:', error);
       } finally {
@@ -56,26 +61,39 @@ export default function DashboardPage() {
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">-</div>
-              <div className="text-sm text-gray-500 dark:text-slate-400">Conversations</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {loading ? '-' : stats ? stats.conversations.used : '-'}
+              </div>
+              <div className="text-sm text-gray-500 dark:text-slate-400">Conversations This Month</div>
             </div>
           </div>
-          <p className="text-xs text-gray-400 dark:text-slate-500">Coming soon</p>
+          {stats && stats.conversations.limit !== Infinity && (
+            <p className="text-xs text-gray-400 dark:text-slate-500">
+              {stats.conversations.remaining} of {stats.conversations.limit} remaining
+            </p>
+          )}
+          {stats?.tier === 'pro' && (
+            <p className="text-xs text-gray-400 dark:text-slate-500">Unlimited on Pro</p>
+          )}
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-purple-50 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">-</div>
-              <div className="text-sm text-gray-500 dark:text-slate-400">Resolution Rate</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                {loading ? '-' : stats?.tier === 'pro' ? 'Pro' : 'Free'}
+              </div>
+              <div className="text-sm text-gray-500 dark:text-slate-400">Current Plan</div>
             </div>
           </div>
-          <p className="text-xs text-gray-400 dark:text-slate-500">Coming soon</p>
+          {stats?.tier !== 'pro' && (
+            <Link href="/billing" className="text-xs text-blue-600 dark:text-blue-400 hover:underline">Upgrade</Link>
+          )}
         </div>
       </div>
 

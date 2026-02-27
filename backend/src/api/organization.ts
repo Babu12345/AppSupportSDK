@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config';
+import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '../constants';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -67,6 +68,20 @@ router.post('/', async (req: Request, res: Response) => {
     if (!user) {
       res.status(401).json({ error: 'Not authenticated' });
       return;
+    }
+
+    // Check organization limit
+    const tier = (user.subscriptionTier || 'free') as SubscriptionTier;
+    const limits = SUBSCRIPTION_LIMITS[tier];
+    if (limits.maxOrganizations !== Infinity) {
+      const count = await prisma.organization.count({ where: { userId: user.id } });
+      if (count >= limits.maxOrganizations) {
+        res.status(403).json({
+          error: `Free plan allows up to ${limits.maxOrganizations} organization. Upgrade to Pro for unlimited.`,
+          limit_reached: true,
+        });
+        return;
+      }
     }
 
     const apiKey = generateApiKey();

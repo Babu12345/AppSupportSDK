@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { generateResponse } from '../services/claude.js';
 import { authenticateApiKey } from '../middleware/auth.js';
+import { checkConversationLimit, recordConversation } from '../services/usage.js';
+import { SubscriptionTier } from '../constants.js';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -26,6 +28,26 @@ router.post('/', authenticateApiKey, async (req: Request, res: Response) => {
     if (!query || typeof query !== 'string') {
       res.status(400).json({ error: 'query is required' });
       return;
+    }
+
+    // Check conversation limit
+    const org = await prisma.organization.findUnique({
+      where: { id: organization.id },
+      include: { user: true },
+    });
+
+    if (org) {
+      const tier = (org.user.subscriptionTier || 'free') as SubscriptionTier;
+      const limit = await checkConversationLimit(org.user.id, tier);
+      if (!limit.allowed) {
+        res.status(429).json({
+          error: 'Monthly conversation limit reached. Upgrade to Pro for unlimited conversations.',
+          limit_reached: true,
+          current: limit.current,
+          limit: limit.limit,
+        });
+        return;
+      }
     }
 
     // Get organization's knowledge base
@@ -68,6 +90,11 @@ router.post('/', authenticateApiKey, async (req: Request, res: Response) => {
           { conversationId: conversation.id, role: 'assistant', content: response, source: 'cloud' },
         ],
       });
+    }
+
+    // Record conversation usage
+    if (org) {
+      await recordConversation(org.user.id);
     }
 
     res.json({

@@ -16,7 +16,13 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  subscriptionTier     String  @default("free")
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+  hasUsedTrial         Boolean @default(false)
+
   organizations Organization[]
+  chatEvents    ChatEvent[]
 }
 
 model Organization {
@@ -68,4 +74,13 @@ model Message {
   source         String?      // "cloud", "on-device"
 
   createdAt      DateTime     @default(now())
+}
+
+model ChatEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

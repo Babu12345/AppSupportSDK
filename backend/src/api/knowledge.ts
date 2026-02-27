@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config';
+import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '../constants';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -109,6 +110,28 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
     if (!title || !content) {
       res.status(400).json({ error: 'title and content are required' });
       return;
+    }
+
+    // Check knowledge source limit
+    const org = await prisma.organization.findUnique({
+      where: { id: req.organization!.id },
+      include: { user: true },
+    });
+    if (org) {
+      const tier = (org.user.subscriptionTier || 'free') as SubscriptionTier;
+      const limits = SUBSCRIPTION_LIMITS[tier];
+      if (limits.maxKnowledgeSources !== Infinity) {
+        const count = await prisma.knowledgeSource.count({
+          where: { organizationId: req.organization!.id },
+        });
+        if (count >= limits.maxKnowledgeSources) {
+          res.status(403).json({
+            error: `Free plan allows up to ${limits.maxKnowledgeSources} knowledge articles. Upgrade to Pro for unlimited.`,
+            limit_reached: true,
+          });
+          return;
+        }
+      }
     }
 
     const source = await prisma.knowledgeSource.create({

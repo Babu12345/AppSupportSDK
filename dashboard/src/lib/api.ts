@@ -61,6 +61,7 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
+  subscriptionTier?: string;
 }
 
 export interface Organization {
@@ -160,4 +161,31 @@ export async function updateKnowledgeSource(
 
 export async function deleteKnowledgeSource(id: string): Promise<void> {
   await apiRequest(`/v1/knowledge/${id}`, { method: 'DELETE' });
+}
+
+// Billing API
+export interface UsageStats {
+  tier: string;
+  conversations: {
+    used: number;
+    limit: number;
+    remaining: number;
+  };
+  limits: {
+    maxOrganizations: number;
+    maxKnowledgeSources: number;
+    conversationsPerMonth: number;
+  };
+}
+
+export async function getUsageStats(): Promise<UsageStats> {
+  return apiRequest('/v1/auth/usage');
+}
+
+export async function createCheckoutSession(): Promise<{ url: string }> {
+  return apiRequest('/v1/stripe/checkout', { method: 'POST' });
+}
+
+export async function createPortalSession(): Promise<{ url: string }> {
+  return apiRequest('/v1/stripe/portal', { method: 'POST' });
 }

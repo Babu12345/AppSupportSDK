@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { JWT_SECRET } from '../config';
+import { getConversationsThisMonth } from '../services/usage';
+import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '../constants';
 const router = Router();
 const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
@@ -67,6 +69,7 @@ router.post('/signup', async (req: Request, res: Response) => {
         id: user.id,
         email: user.email,
         name: user.name,
+        subscriptionTier: user.subscriptionTier,
       },
       organizations: user.organizations.map(org => ({
         id: org.id,
@@ -129,6 +132,7 @@ router.post('/login', async (req: Request, res: Response) => {
         id: user.id,
         email: user.email,
         name: user.name,
+        subscriptionTier: user.subscriptionTier,
       },
       organizations: user.organizations.map(org => ({
         id: org.id,
@@ -221,6 +225,7 @@ router.post('/google', async (req: Request, res: Response) => {
         id: user.id,
         email: user.email,
         name: user.name,
+        subscriptionTier: user.subscriptionTier,
       },
       organizations: user.organizations.map(org => ({
         id: org.id,
@@ -263,12 +268,58 @@ router.get('/me', async (req: Request, res: Response) => {
         id: user.id,
         email: user.email,
         name: user.name,
+        subscriptionTier: user.subscriptionTier,
       },
       organizations: user.organizations.map(org => ({
         id: org.id,
         name: org.name,
         apiKey: org.apiKey,
       })),
+    });
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// GET /v1/auth/usage - Get usage stats for current user
+router.get('/usage', async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+    });
+
+    if (!user) {
+      res.status(401).json({ error: 'User not found' });
+      return;
+    }
+
+    const tier = (user.subscriptionTier || 'free') as SubscriptionTier;
+    const limits = SUBSCRIPTION_LIMITS[tier];
+    const conversationsUsed = await getConversationsThisMonth(user.id);
+
+    res.json({
+      tier: user.subscriptionTier,
+      conversations: {
+        used: conversationsUsed,
+        limit: limits.conversationsPerMonth,
+        remaining: limits.conversationsPerMonth === Infinity
+          ? Infinity
+          : Math.max(0, limits.conversationsPerMonth - conversationsUsed),
+      },
+      limits: {
+        maxOrganizations: limits.maxOrganizations,
+        maxKnowledgeSources: limits.maxKnowledgeSources,
+        conversationsPerMonth: limits.conversationsPerMonth,
+      },
     });
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });

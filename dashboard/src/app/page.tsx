@@ -14,6 +14,12 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
+              href="/pricing"
+              className="text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              Pricing
+            </Link>
+            <Link
               href="/login"
               className="text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
@@ -259,6 +265,55 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="py-20 md:py-28 border-t border-gray-100 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Simple Pricing</h2>
+            <p className="mt-4 text-lg text-gray-600 dark:text-slate-400">Start free, upgrade when you need more.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            {/* Free */}
+            <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-8">
+              <h3 className="text-xl font-bold">Free</h3>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Perfect for trying out SupportKit</p>
+              <div className="mt-4 mb-6">
+                <span className="text-4xl font-bold">$0</span>
+                <span className="text-gray-500 dark:text-slate-400">/month</span>
+              </div>
+              <Link href="/login" className="block w-full h-11 flex items-center justify-center border border-gray-300 dark:border-slate-600 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800">Get Started</Link>
+              <ul className="mt-6 space-y-3">
+                {['100 AI conversations/month', '1 organization', '5 knowledge articles', 'Community support'].map(f => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
+                    <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Pro */}
+            <div className="rounded-2xl border-2 border-blue-600 bg-white dark:bg-slate-900 p-8 shadow-lg ring-1 ring-blue-600">
+              <span className="inline-block text-xs font-semibold bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full mb-3">Most Popular</span>
+              <h3 className="text-xl font-bold">Pro</h3>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">For growing apps that need more</p>
+              <div className="mt-4 mb-6">
+                <span className="text-4xl font-bold">$5</span>
+                <span className="text-gray-500 dark:text-slate-400">/month</span>
+              </div>
+              <Link href="/pricing" className="block w-full h-11 flex items-center justify-center bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">Start Free Trial</Link>
+              <ul className="mt-6 space-y-3">
+                {['Unlimited AI conversations', 'Unlimited organizations', 'Unlimited knowledge articles', 'Priority support', '7-day free trial'].map(f => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
+                    <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
