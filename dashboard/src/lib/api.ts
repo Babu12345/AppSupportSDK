@@ -1,16 +1,49 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://appsupportsdk-production.up.railway.app';
 
+// Auth token management
+export function getToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token');
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem('token', token);
+}
+
+export function clearToken(): void {
+  localStorage.removeItem('token');
+  localStorage.removeItem('currentOrgId');
+}
+
+export function getCurrentOrgId(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('currentOrgId');
+}
+
+export function setCurrentOrgId(orgId: string): void {
+  localStorage.setItem('currentOrgId', orgId);
+}
+
+// API request helper
 export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const apiKey = typeof window !== 'undefined' ? localStorage.getItem('apiKey') : null;
+  const token = getToken();
+  const orgId = getCurrentOrgId();
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  // Add orgId to query string if needed
+  let url = `${API_BASE}${endpoint}`;
+  if (orgId && !endpoint.includes('orgId=') && !endpoint.startsWith('/v1/auth') && !endpoint.startsWith('/v1/organizations')) {
+    const separator = endpoint.includes('?') ? '&' : '?';
+    url += `${separator}orgId=${orgId}`;
+  }
+
+  const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
@@ -21,6 +54,65 @@ export async function apiRequest<T>(
   }
 
   return response.json();
+}
+
+// Auth API
+export interface User {
+  id: string;
+  email: string;
+  name: string | null;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  apiKey: string;
+  createdAt?: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+  organizations: Organization[];
+}
+
+export async function signup(
+  email: string,
+  password: string,
+  name?: string,
+  organizationName?: string
+): Promise<AuthResponse> {
+  return apiRequest('/v1/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, name, organizationName }),
+  });
+}
+
+export async function login(email: string, password: string): Promise<AuthResponse> {
+  return apiRequest('/v1/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function getCurrentUser(): Promise<{ user: User; organizations: Organization[] }> {
+  return apiRequest('/v1/auth/me');
+}
+
+// Organization API
+export async function getOrganizations(): Promise<{ organizations: Organization[] }> {
+  return apiRequest('/v1/organizations');
+}
+
+export async function createOrganization(name: string): Promise<Organization> {
+  return apiRequest('/v1/organizations', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function deleteOrganization(id: string): Promise<void> {
+  await apiRequest(`/v1/organizations/${id}`, { method: 'DELETE' });
 }
 
 // Knowledge API
@@ -60,19 +152,5 @@ export async function updateKnowledgeSource(
 }
 
 export async function deleteKnowledgeSource(id: string): Promise<void> {
-  return apiRequest(`/v1/knowledge/${id}`, {
-    method: 'DELETE',
-  });
-}
-
-// Organization API
-export async function createOrganization(name: string): Promise<{
-  id: string;
-  name: string;
-  apiKey: string;
-}> {
-  return apiRequest('/v1/organizations', {
-    method: 'POST',
-    body: JSON.stringify({ name }),
-  });
+  await apiRequest(`/v1/knowledge/${id}`, { method: 'DELETE' });
 }

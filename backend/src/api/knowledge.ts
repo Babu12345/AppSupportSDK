@@ -1,17 +1,73 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticateApiKey } from '../middleware/auth.js';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+interface AuthRequest extends Request {
+  organization?: { id: string; name: string };
+}
+
+// Middleware to authenticate via API key OR JWT + orgId
+async function authenticate(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Missing or invalid Authorization header' });
+    return;
+  }
+
+  const token = authHeader.substring(7);
+
+  // Check if it's an API key (starts with sk_live_)
+  if (token.startsWith('sk_live_')) {
+    const organization = await prisma.organization.findUnique({
+      where: { apiKey: token },
+    });
+
+    if (!organization) {
+      res.status(401).json({ error: 'Invalid API key' });
+      return;
+    }
+
+    req.organization = { id: organization.id, name: organization.name };
+    next();
+    return;
+  }
+
+  // Otherwise, treat as JWT
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const orgId = req.query.orgId as string || req.headers['x-organization-id'] as string;
+
+    if (!orgId) {
+      res.status(400).json({ error: 'Organization ID required (use ?orgId= or X-Organization-Id header)' });
+      return;
+    }
+
+    const organization = await prisma.organization.findFirst({
+      where: { id: orgId, userId: decoded.userId },
+    });
+
+    if (!organization) {
+      res.status(404).json({ error: 'Organization not found' });
+      return;
+    }
+
+    req.organization = { id: organization.id, name: organization.name };
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+}
 
 // GET /v1/knowledge - Get all knowledge sources for the organization
-router.get('/', authenticateApiKey, async (req: Request, res: Response) => {
+router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const organization = (req as any).organization;
-
     const sources = await prisma.knowledgeSource.findMany({
-      where: { organizationId: organization.id },
+      where: { organizationId: req.organization!.id },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -23,15 +79,12 @@ router.get('/', authenticateApiKey, async (req: Request, res: Response) => {
 });
 
 // GET /v1/knowledge/bundle - Get knowledge bundle for SDK sync
-router.get('/bundle', authenticateApiKey, async (req: Request, res: Response) => {
+router.get('/bundle', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const organization = (req as any).organization;
-
     const sources = await prisma.knowledgeSource.findMany({
-      where: { organizationId: organization.id },
+      where: { organizationId: req.organization!.id },
     });
 
-    // Combine all knowledge into a single bundle for on-device caching
     const content = sources
       .map(k => `## ${k.title}\n${k.content}`)
       .join('\n\n');
@@ -40,7 +93,7 @@ router.get('/bundle', authenticateApiKey, async (req: Request, res: Response) =>
       version: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
       content,
-      organizationName: organization.name,
+      organizationName: req.organization!.name,
     });
   } catch (error) {
     console.error('Get bundle error:', error);
@@ -49,9 +102,8 @@ router.get('/bundle', authenticateApiKey, async (req: Request, res: Response) =>
 });
 
 // POST /v1/knowledge - Add a new knowledge source
-router.post('/', authenticateApiKey, async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const organization = (req as any).organization;
     const { title, content, sourceType = 'manual', sourceUrl } = req.body;
 
     if (!title || !content) {
@@ -61,7 +113,7 @@ router.post('/', authenticateApiKey, async (req: Request, res: Response) => {
 
     const source = await prisma.knowledgeSource.create({
       data: {
-        organizationId: organization.id,
+        organizationId: req.organization!.id,
         title,
         content,
         sourceType,
@@ -77,14 +129,13 @@ router.post('/', authenticateApiKey, async (req: Request, res: Response) => {
 });
 
 // PUT /v1/knowledge/:id - Update a knowledge source
-router.put('/:id', authenticateApiKey, async (req: Request, res: Response) => {
+router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const organization = (req as any).organization;
     const id = req.params.id as string;
     const { title, content } = req.body;
 
     const existing = await prisma.knowledgeSource.findFirst({
-      where: { id, organizationId: organization.id },
+      where: { id, organizationId: req.organization!.id },
     });
 
     if (!existing) {
@@ -105,13 +156,12 @@ router.put('/:id', authenticateApiKey, async (req: Request, res: Response) => {
 });
 
 // DELETE /v1/knowledge/:id - Delete a knowledge source
-router.delete('/:id', authenticateApiKey, async (req: Request, res: Response) => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const organization = (req as any).organization;
     const id = req.params.id as string;
 
     const existing = await prisma.knowledgeSource.findFirst({
-      where: { id, organizationId: organization.id },
+      where: { id, organizationId: req.organization!.id },
     });
 
     if (!existing) {
