@@ -20,8 +20,12 @@ function getClient(): Anthropic {
       throw new Error('ANTHROPIC_API_KEY environment variable is not set');
     }
 
-    // Clean the API key (remove any accidental whitespace or quotes)
-    const cleanedKey = apiKey.trim().replace(/^["']|["']$/g, '');
+    // Clean the API key (remove any accidental whitespace, quotes, or newlines)
+    const cleanedKey = apiKey
+      .trim()
+      .replace(/^["']|["']$/g, '')  // Remove surrounding quotes
+      .replace(/[\r\n]/g, '')       // Remove any newlines
+      .replace(/\\/g, '');          // Remove any backslashes
 
     anthropic = new Anthropic({
       apiKey: cleanedKey,
