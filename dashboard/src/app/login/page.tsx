@@ -38,7 +38,7 @@ export default function LoginPage() {
         if (result.organizations.length > 0) {
           setCurrentOrgId(result.organizations[0].id);
         }
-        router.push('/');
+        router.push('/dashboard');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Google sign-in failed');
       } finally {
@@ -63,7 +63,7 @@ export default function LoginPage() {
         setCurrentOrgId(result.organizations[0].id);
       }
 
-      router.push('/');
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -95,7 +95,7 @@ export default function LoginPage() {
         setCurrentOrgId(result.organizations[0].id);
       }
 
-      router.push('/');
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed');
     } finally {
