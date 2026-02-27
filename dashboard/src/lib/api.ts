@@ -95,6 +95,13 @@ export async function login(email: string, password: string): Promise<AuthRespon
   });
 }
 
+export async function googleLogin(accessToken: string): Promise<AuthResponse> {
+  return apiRequest('/v1/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ access_token: accessToken }),
+  });
+}
+
 export async function getCurrentUser(): Promise<{ user: User; organizations: Organization[] }> {
   return apiRequest('/v1/auth/me');
 }
