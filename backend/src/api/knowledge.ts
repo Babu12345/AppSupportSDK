@@ -80,7 +80,7 @@ router.post('/', authenticateApiKey, async (req: Request, res: Response) => {
 router.put('/:id', authenticateApiKey, async (req: Request, res: Response) => {
   try {
     const organization = (req as any).organization;
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { title, content } = req.body;
 
     const existing = await prisma.knowledgeSource.findFirst({
@@ -108,7 +108,7 @@ router.put('/:id', authenticateApiKey, async (req: Request, res: Response) => {
 router.delete('/:id', authenticateApiKey, async (req: Request, res: Response) => {
   try {
     const organization = (req as any).organization;
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     const existing = await prisma.knowledgeSource.findFirst({
       where: { id, organizationId: organization.id },
