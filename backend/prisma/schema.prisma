@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  apiKey    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  knowledge     KnowledgeSource[]
+  conversations Conversation[]
+}
+
+model KnowledgeSource {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  title          String
+  content        String       // The actual knowledge content (markdown)
+  sourceType     String       // "manual", "url", "file"
+  sourceUrl      String?      // Original URL if scraped
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Conversation {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  sessionId      String       // Client-generated session ID
+  messages       Message[]
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+
+  role           String       // "user" or "assistant"
+  content        String
+  source         String?      // "cloud", "on-device"
+
+  createdAt      DateTime     @default(now())
+}

@@ -15,19 +15,24 @@ final class APIClient {
 
     /// Send a chat message and get a response
     func chat(messages: [Message], query: String) async throws -> String {
-        // For now, use mock responses while backend is not ready
-        #if DEBUG
-        return try await mockChatResponse(query: query)
-        #else
-        return try await performChatRequest(messages: messages, query: query)
-        #endif
+        // Use real backend, fall back to mock in DEBUG if backend unavailable
+        do {
+            return try await performChatRequest(messages: messages, query: query)
+        } catch {
+            #if DEBUG
+            print("SupportKit: Backend request failed (\(error)), using mock response")
+            return try await mockChatResponse(query: query)
+            #else
+            throw error
+            #endif
+        }
     }
 
     // MARK: - Knowledge Sync
 
     /// Fetch the latest knowledge bundle
     func fetchKnowledgeBundle() async throws -> KnowledgeBundle {
-        let url = configuration.baseURL.appendingPathComponent("/v1/knowledge")
+        let url = configuration.baseURL.appendingPathComponent("v1/knowledge/bundle")
 
         var request = URLRequest(url: url)
         request.setValue("Bearer \(configuration.apiKey)", forHTTPHeaderField: "Authorization")
@@ -45,7 +50,7 @@ final class APIClient {
     // MARK: - Private
 
     private func performChatRequest(messages: [Message], query: String) async throws -> String {
-        let url = configuration.baseURL.appendingPathComponent("/v1/chat")
+        let url = configuration.baseURL.appendingPathComponent("v1/chat")
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
