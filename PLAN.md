@@ -206,30 +206,29 @@ class OnDeviceProcessor {
 
 ### 2.2 Local Knowledge Cache
 
+Since we're using full-context (no RAG), we can cache the **entire knowledge base** on-device for true offline support.
+
 **Sync Strategy:**
-- Dashboard marks "Top 50" FAQs for on-device caching
-- SDK downloads compressed knowledge bundle on init
-- Background sync every 24h or on-demand
-- Bundle size target: < 5MB for typical knowledge base
+- SDK downloads full knowledge bundle on init
+- Background sync every 24h or on config change
+- Bundle size target: < 2MB for typical knowledge base (~50k tokens of text)
 
 **Cache Format:**
 ```swift
 struct LocalKnowledgeBundle: Codable {
     let version: String
     let lastUpdated: Date
-    let faqs: [CachedFAQ]
+    let content: String             // Full knowledge base as markdown
     let topicBoundaries: TopicConfig
-    let intentPatterns: [IntentPattern]
-}
-
-struct CachedFAQ: Codable {
-    let id: String
-    let question: String
-    let questionVariants: [String]  // Semantic variations
-    let answer: String
-    let embedding: [Float]?         // For on-device similarity
+    let escalationConfig: EscalationConfig
 }
 ```
+
+**On-Device Flow:**
+1. Apple Intelligence receives query + full cached content
+2. Generates response grounded in local content
+3. No network needed for common questions
+4. Sync in background when connectivity available
 
 ### 2.3 Graceful Degradation
 
