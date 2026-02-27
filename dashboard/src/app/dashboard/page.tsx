@@ -80,13 +80,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Start */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="px-4 md:px-6 py-4 border-b border-gray-200 dark:border-slate-700">
           <h2 className="font-semibold text-gray-900 dark:text-white">Quick Start</h2>
         </div>
 
         <div className="divide-y divide-gray-200 dark:divide-slate-700">
-          <div className="flex items-start gap-4 p-6">
+          <div className="flex items-start gap-4 p-4 md:p-6">
             <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium text-sm shrink-0">
               1
             </div>
@@ -104,7 +104,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-start gap-4 p-6">
+          <div className="flex items-start gap-4 p-4 md:p-6">
             <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium text-sm shrink-0">
               2
             </div>
@@ -122,18 +122,22 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-start gap-4 p-6">
+          <div className="flex items-start gap-4 p-4 md:p-6">
             <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium text-sm shrink-0">
               3
             </div>
             <div className="flex-1">
               <h3 className="font-medium text-gray-900 dark:text-white">Integrate SDK</h3>
               <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Add a few lines of code to your iOS app:</p>
-              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg mt-3 text-sm overflow-x-auto">
+              <pre className="bg-gray-900 text-gray-100 p-3 md:p-4 rounded-lg mt-3 text-xs md:text-sm overflow-x-auto max-w-full">
 {`import SupportKit
 
-SupportKit.configure(apiKey: "your-api-key")
-SupportKit.presentChat(from: viewController)`}
+SupportKit.configure(
+  apiKey: "your-api-key"
+)
+SupportKit.presentChat(
+  from: viewController
+)`}
               </pre>
             </div>
           </div>
