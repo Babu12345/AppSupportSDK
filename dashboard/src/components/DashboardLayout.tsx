@@ -23,6 +23,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function checkAuth() {
       const token = getToken();
+      console.log('DashboardLayout: token exists?', !!token);
       if (!token) {
         router.push('/login');
         return;
@@ -30,6 +31,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       try {
         const { user, organizations } = await getCurrentUser();
+        console.log('DashboardLayout: getCurrentUser succeeded', user.email);
         setUser(user);
         setOrganizations(organizations);
 
@@ -40,7 +42,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           setCurrentOrgId(org.id);
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('DashboardLayout: getCurrentUser FAILED:', error);
         router.push('/login');
       } finally {
         setIsLoading(false);

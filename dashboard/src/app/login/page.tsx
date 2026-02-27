@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGoogleLogin } from '@react-oauth/google';
-import { signup, login, googleLogin, setToken, setCurrentOrgId } from '@/lib/api';
+import { signup, login, googleLogin, setToken, setCurrentOrgId, getToken, getCurrentUser } from '@/lib/api';
 
 function LoadingSpinner() {
   return (
@@ -28,25 +28,40 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      getCurrentUser()
+        .then(() => router.push('/dashboard'))
+        .catch(() => {}); // Token invalid, stay on login
+    }
+  }, [router]);
+
   const handleGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       setError('');
       setGoogleLoading(true);
       try {
+        console.log('Google token received, calling backend...');
         const result = await googleLogin(tokenResponse.access_token);
+        console.log('Backend response received, storing token...');
         setToken(result.token);
         if (result.organizations.length > 0) {
           setCurrentOrgId(result.organizations[0].id);
         }
+        console.log('Token stored, redirecting to /dashboard...');
         router.push('/dashboard');
       } catch (err) {
+        console.error('Google login backend error:', err);
         setError(err instanceof Error ? err.message : 'Google sign-in failed');
       } finally {
         setGoogleLoading(false);
       }
     },
-    onError: () => {
-      setError('Google sign-in failed');
+    onError: (errorResponse) => {
+      console.error('Google OAuth error:', errorResponse);
+      setError('Google sign-in failed. Check browser console for details.');
     },
   });
 
