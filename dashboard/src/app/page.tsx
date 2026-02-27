@@ -298,7 +298,7 @@ export default function LandingPage() {
                 <span className="text-4xl font-bold">$5</span>
                 <span className="text-gray-500 dark:text-slate-400">/month</span>
               </div>
-              <Link href="/pricing" className="block w-full h-11 flex items-center justify-center bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">Start Free Trial</Link>
+              <Link href="/billing" className="block w-full h-11 flex items-center justify-center bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">Start Free Trial</Link>
               <ul className="mt-6 space-y-3">
                 {['Unlimited AI conversations', 'Unlimited organizations', 'Unlimited knowledge articles', 'Priority support', '7-day free trial'].map(f => (
                   <li key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
