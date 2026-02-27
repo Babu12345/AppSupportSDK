@@ -5,8 +5,26 @@ let anthropic: Anthropic | null = null;
 
 function getClient(): Anthropic {
   if (!anthropic) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+
+    // Debug logging (safe - doesn't expose the actual key)
+    console.log('ANTHROPIC_API_KEY status:', {
+      exists: !!apiKey,
+      length: apiKey?.length,
+      startsWithSk: apiKey?.startsWith('sk-'),
+      hasWhitespace: apiKey !== apiKey?.trim(),
+      hasQuotes: apiKey?.includes('"') || apiKey?.includes("'"),
+    });
+
+    if (!apiKey) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+    }
+
+    // Clean the API key (remove any accidental whitespace or quotes)
+    const cleanedKey = apiKey.trim().replace(/^["']|["']$/g, '');
+
     anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
+      apiKey: cleanedKey,
     });
   }
   return anthropic;
