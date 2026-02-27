@@ -2,20 +2,20 @@ import Link from 'next/link';
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline mb-6">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-6">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           Back to SupportKit
         </Link>
       </div>
-      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Terms of Service</h1>
-        <p className="text-sm text-gray-500 mb-8">Last updated: February 27, 2026</p>
+      <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 rounded-lg shadow dark:shadow-slate-800/50 p-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Terms of Service</h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mb-8">Last updated: February 27, 2026</p>
 
-        <div className="space-y-6 text-gray-700 leading-relaxed">
+        <div className="space-y-6 text-gray-700 dark:text-slate-300 leading-relaxed">
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">1. Acceptance of Terms</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">1. Acceptance of Terms</h2>
             <p>
               By accessing or using SupportKit (&quot;the Service&quot;), including the SupportKit Dashboard
               and SDK, you agree to be bound by these Terms of Service. If you do not agree to these
@@ -24,7 +24,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">2. Description of Service</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">2. Description of Service</h2>
             <p>
               SupportKit provides an AI-powered customer support SDK and dashboard that enables developers
               to integrate intelligent support into their applications. The Service includes:
@@ -37,7 +37,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">3. Account Registration</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">3. Account Registration</h2>
             <p>
               To use the Service, you must create an account using an email and password or by signing
               in with Google. You are responsible for maintaining the security of your account credentials
@@ -46,7 +46,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">4. Acceptable Use</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">4. Acceptable Use</h2>
             <p>You agree not to:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li>Use the Service for any unlawful purpose</li>
@@ -59,7 +59,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">5. Your Content</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">5. Your Content</h2>
             <p>
               You retain ownership of all content you upload to SupportKit, including knowledge base
               articles and organizational data. By uploading content, you grant us a license to use
@@ -69,7 +69,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">6. AI-Generated Responses</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">6. AI-Generated Responses</h2>
             <p>
               SupportKit uses artificial intelligence to generate support responses based on your
               knowledge base content. While we strive for accuracy, AI-generated responses may
@@ -79,7 +79,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">7. API Keys and Security</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">7. API Keys and Security</h2>
             <p>
               API keys are provided for authenticating your application with the SupportKit backend.
               You are solely responsible for keeping your API keys secure. If you believe an API key
@@ -88,7 +88,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">8. Service Availability</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">8. Service Availability</h2>
             <p>
               We strive to maintain high availability of the Service but do not guarantee uninterrupted
               access. The Service may be temporarily unavailable due to maintenance, updates, or
@@ -97,7 +97,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">9. Limitation of Liability</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">9. Limitation of Liability</h2>
             <p>
               To the maximum extent permitted by law, SupportKit shall not be liable for any indirect,
               incidental, special, consequential, or punitive damages, including loss of profits, data,
@@ -106,7 +106,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">10. Termination</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">10. Termination</h2>
             <p>
               We may suspend or terminate your access to the Service at any time for violation of these
               terms. You may delete your account at any time. Upon termination, your right to use the
@@ -115,7 +115,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">11. Changes to Terms</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">11. Changes to Terms</h2>
             <p>
               We reserve the right to modify these terms at any time. We will notify you of material
               changes by posting updated terms on this page. Continued use of the Service after changes
@@ -124,17 +124,17 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">12. Contact Us</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">12. Contact Us</h2>
             <p>
               If you have questions about these Terms of Service, please contact us at{' '}
-              <a href="mailto:babs@wanyekitech.com" className="text-blue-600 hover:underline">
+              <a href="mailto:babs@wanyekitech.com" className="text-blue-600 dark:text-blue-400 hover:underline">
                 babs@wanyekitech.com
               </a>.
             </p>
           </section>
         </div>
-        <div className="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-500">
-          <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700 text-sm text-gray-500 dark:text-slate-400">
+          <Link href="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">Privacy Policy</Link>
         </div>
       </div>
     </div>
