@@ -72,8 +72,7 @@ export default function PricingPage() {
             SupportKit
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white">Sign in</Link>
-            <Link href="/login" className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Get Started</Link>
+            <Link href="/login" className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Login</Link>
           </div>
         </div>
       </header>

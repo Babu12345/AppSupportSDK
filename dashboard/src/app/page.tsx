@@ -21,15 +21,9 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/login"
-              className="text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/login"
               className="h-9 px-4 inline-flex items-center justify-center rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
             >
-              Get Started
+              Login
             </Link>
           </div>
         </div>
