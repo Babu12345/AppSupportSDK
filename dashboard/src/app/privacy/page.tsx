@@ -1,6 +1,14 @@
+import Link from 'next/link';
+
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <Link href="/login" className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline mb-6">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          Back to SupportKit
+        </Link>
+      </div>
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Privacy Policy</h1>
         <p className="text-sm text-gray-500 mb-8">Last updated: February 27, 2026</p>
@@ -101,6 +109,9 @@ export default function PrivacyPolicy() {
               </a>.
             </p>
           </section>
+        </div>
+        <div className="mt-8 pt-6 border-t border-gray-200 text-sm text-gray-500">
+          <Link href="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>
         </div>
       </div>
     </div>

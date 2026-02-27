@@ -358,6 +358,11 @@ export default function LoginPage() {
               </p>
             </div>
           </div>
+          <p className="mt-4 text-center text-xs text-gray-400 dark:text-slate-500">
+            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+            {' · '}
+            <Link href="/terms" className="hover:underline">Terms of Service</Link>
+          </p>
         </div>
       </main>
     </div>
