@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://appsupportsdk-production.up.railway.app';
 
 export async function apiRequest<T>(
   endpoint: string,
