@@ -80,11 +80,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-950">
       {/* Header */}
-      <header className="border-b bg-white">
+      <header className="border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto flex h-16 items-center px-4">
-          <Link href="/login" className="flex items-center gap-2 font-bold text-xl">
+          <Link href="/login" className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white">
             <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -96,13 +96,13 @@ export default function LoginPage() {
       {/* Main */}
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-xl border shadow-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
             {/* Card Header */}
             <div className="px-6 pt-6 pb-4 space-y-1">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {mode === 'login' ? 'Welcome back' : 'Create an account'}
               </h1>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-slate-400">
                 {mode === 'login'
                   ? 'Sign in to your account to continue'
                   : 'Get started with SupportKit for free'}
@@ -112,7 +112,7 @@ export default function LoginPage() {
             {/* Card Content */}
             <div className="px-6 pb-6 space-y-4">
               {error && (
-                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+                <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 p-3 rounded-lg">
                   {error}
                 </div>
               )}
@@ -120,7 +120,7 @@ export default function LoginPage() {
               {mode === 'login' ? (
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-slate-300">
                       Email
                     </label>
                     <input
@@ -129,13 +129,13 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full h-10 px-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-slate-300">
                       Password
                     </label>
                     <div className="relative">
@@ -145,13 +145,13 @@ export default function LoginPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Enter your password"
-                        className="w-full h-10 px-3 pr-16 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full h-10 px-3 pr-16 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700 font-medium"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white font-medium"
                       >
                         {showPassword ? 'Hide' : 'Show'}
                       </button>
@@ -161,7 +161,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-10 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full h-10 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {loading && <LoadingSpinner />}
                     Sign in
@@ -170,7 +170,7 @@ export default function LoginPage() {
               ) : (
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-slate-300">
                       Full name
                     </label>
                     <input
@@ -179,12 +179,12 @@ export default function LoginPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="John Doe"
-                      className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full h-10 px-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="signup-email" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="signup-email" className="text-sm font-medium text-gray-700 dark:text-slate-300">
                       Email
                     </label>
                     <input
@@ -193,13 +193,13 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full h-10 px-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="signup-password" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="signup-password" className="text-sm font-medium text-gray-700 dark:text-slate-300">
                       Password
                     </label>
                     <div className="relative">
@@ -210,22 +210,22 @@ export default function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Create a password"
                         minLength={6}
-                        className="w-full h-10 px-3 pr-16 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full h-10 px-3 pr-16 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700 font-medium"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white font-medium"
                       >
                         {showPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
-                    <p className="text-xs text-gray-500">Must be at least 6 characters</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Must be at least 6 characters</p>
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="confirm-password" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="confirm-password" className="text-sm font-medium text-gray-700 dark:text-slate-300">
                       Confirm password
                     </label>
                     <input
@@ -235,13 +235,13 @@ export default function LoginPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm your password"
                       minLength={6}
-                      className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full h-10 px-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="org-name" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="org-name" className="text-sm font-medium text-gray-700 dark:text-slate-300">
                       Organization name
                     </label>
                     <input
@@ -250,14 +250,14 @@ export default function LoginPage() {
                       value={orgName}
                       onChange={(e) => setOrgName(e.target.value)}
                       placeholder="My App (optional)"
-                      className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full h-10 px-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-10 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full h-10 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {loading && <LoadingSpinner />}
                     Create account
@@ -267,14 +267,14 @@ export default function LoginPage() {
             </div>
 
             {/* Card Footer */}
-            <div className="px-6 pb-6 pt-2 border-t">
-              <p className="text-sm text-gray-500 text-center">
+            <div className="px-6 pb-6 pt-2 border-t border-gray-200 dark:border-slate-700">
+              <p className="text-sm text-gray-500 dark:text-slate-400 text-center">
                 {mode === 'login' ? (
                   <>
                     Don&apos;t have an account?{' '}
                     <button
                       onClick={() => { setMode('signup'); setError(''); }}
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
                     >
                       Sign up
                     </button>
@@ -284,7 +284,7 @@ export default function LoginPage() {
                     Already have an account?{' '}
                     <button
                       onClick={() => { setMode('login'); setError(''); }}
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
                     >
                       Sign in
                     </button>

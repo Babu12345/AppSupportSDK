@@ -83,8 +83,8 @@ export default function KnowledgePage() {
     <DashboardLayout>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Knowledge Base</h1>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
             Add content to train your AI support assistant
           </p>
         </div>
@@ -107,16 +107,16 @@ export default function KnowledgePage() {
           </svg>
         </div>
       ) : sources.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
-          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-12 text-center">
+          <div className="w-12 h-12 bg-gray-100 dark:bg-slate-700 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
             No knowledge sources yet
           </h2>
-          <p className="text-gray-500 text-sm mb-6">
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">
             Add FAQs, help articles, or documentation to get started
           </p>
           <button
@@ -127,28 +127,28 @@ export default function KnowledgePage() {
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm divide-y divide-gray-200 dark:divide-slate-700">
           {sources.map((source) => (
             <div
               key={source.id}
-              className="p-4 hover:bg-gray-50 transition-colors"
+              className="p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900">
+                  <h3 className="font-medium text-gray-900 dark:text-white">
                     {source.title}
                   </h3>
-                  <p className="text-gray-500 text-sm mt-1 line-clamp-2">
+                  <p className="text-gray-500 dark:text-slate-400 text-sm mt-1 line-clamp-2">
                     {source.content}
                   </p>
-                  <p className="text-gray-400 text-xs mt-2">
+                  <p className="text-gray-400 dark:text-slate-500 text-xs mt-2">
                     Added {new Date(source.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex gap-1 ml-4">
                   <button
                     onClick={() => openEditModal(source)}
-                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -156,7 +156,7 @@ export default function KnowledgePage() {
                   </button>
                   <button
                     onClick={() => handleDelete(source.id)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -172,23 +172,23 @@ export default function KnowledgePage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleSubmit}>
-              <div className="px-6 py-4 border-b">
-                <h2 className="text-lg font-semibold text-gray-900">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {editingSource ? 'Edit Knowledge Source' : 'Add Knowledge Source'}
                 </h2>
               </div>
 
               <div className="p-6 space-y-4">
                 {error && (
-                  <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+                  <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm">
                     {error}
                   </div>
                 )}
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     Title
                   </label>
                   <input
@@ -198,13 +198,13 @@ export default function KnowledgePage() {
                       setFormData({ ...formData, title: e.target.value })
                     }
                     placeholder="e.g., How to reset password"
-                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full h-10 px-3 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                     Content
                   </label>
                   <textarea
@@ -214,17 +214,17 @@ export default function KnowledgePage() {
                     }
                     placeholder="Enter the knowledge content here. This can be FAQ answers, help documentation, product information, etc."
                     rows={10}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     required
                   />
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t flex justify-end gap-3">
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="h-9 px-4 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="h-9 px-4 text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>

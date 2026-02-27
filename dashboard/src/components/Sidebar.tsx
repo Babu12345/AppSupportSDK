@@ -51,10 +51,10 @@ export function Sidebar({ user, organizations, currentOrg, onSwitchOrg }: Sideba
   };
 
   return (
-    <aside className="w-64 bg-white border-r min-h-screen flex flex-col">
+    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 min-h-screen flex flex-col">
       {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl text-gray-900">
+      <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-700">
+        <Link href="/" className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white">
           <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
@@ -64,12 +64,12 @@ export function Sidebar({ user, organizations, currentOrg, onSwitchOrg }: Sideba
 
       {/* Organization Selector */}
       {organizations.length > 0 && (
-        <div className="px-4 py-4 border-b">
-          <label className="block text-xs font-medium text-gray-500 mb-1.5">Organization</label>
+        <div className="px-4 py-4 border-b border-gray-200 dark:border-slate-700">
+          <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1.5">Organization</label>
           <select
             value={currentOrg?.id || ''}
             onChange={(e) => onSwitchOrg(e.target.value)}
-            className="w-full h-9 px-3 rounded-lg border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full h-9 px-3 rounded-lg border border-gray-200 dark:border-slate-600 text-sm bg-gray-50 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             {organizations.map((org) => (
               <option key={org.id} value={org.id}>
@@ -88,8 +88,8 @@ export function Sidebar({ user, organizations, currentOrg, onSwitchOrg }: Sideba
             href={item.href}
             className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               pathname === item.href
-                ? 'bg-blue-50 text-blue-600'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             {item.icon}
@@ -99,16 +99,16 @@ export function Sidebar({ user, organizations, currentOrg, onSwitchOrg }: Sideba
       </nav>
 
       {/* User info & Sign Out */}
-      <div className="border-t p-4">
+      <div className="border-t border-gray-200 dark:border-slate-700 p-4">
         {user && (
           <div className="mb-3">
-            <p className="text-sm font-medium text-gray-900 truncate">{user.name || user.email}</p>
-            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.name || user.email}</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{user.email}</p>
           </div>
         )}
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

@@ -68,15 +68,15 @@ export default function SettingsPage() {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 text-sm mt-1">Manage your SupportKit configuration</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Manage your SupportKit configuration</p>
       </div>
 
       <div className="space-y-6">
         {/* Organizations Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b flex justify-between items-center">
-            <h2 className="font-semibold text-gray-900">Organizations</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
+            <h2 className="font-semibold text-gray-900 dark:text-white">Organizations</h2>
             <button
               onClick={() => setShowNewOrgModal(true)}
               className="h-8 px-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5"
@@ -88,17 +88,17 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          <div className="divide-y">
+          <div className="divide-y divide-gray-200 dark:divide-slate-700">
             {organizations.map((org) => (
               <div
                 key={org.id}
                 className={`px-6 py-4 flex justify-between items-center ${
-                  org.id === currentOrg?.id ? 'bg-blue-50' : ''
+                  org.id === currentOrg?.id ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                 }`}
               >
                 <div>
-                  <h3 className="font-medium text-gray-900">{org.name}</h3>
-                  <p className="text-sm text-gray-500 font-mono mt-0.5">
+                  <h3 className="font-medium text-gray-900 dark:text-white">{org.name}</h3>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 font-mono mt-0.5">
                     {maskApiKey(org.apiKey)}
                   </p>
                 </div>
@@ -108,7 +108,7 @@ export default function SettingsPage() {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                   }}
-                  className="h-8 px-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="h-8 px-3 text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   Copy Key
                 </button>
@@ -119,28 +119,28 @@ export default function SettingsPage() {
 
         {/* Current API Key Section */}
         {currentOrg && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b">
-              <h2 className="font-semibold text-gray-900">API Key</h2>
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+              <h2 className="font-semibold text-gray-900 dark:text-white">API Key</h2>
             </div>
             <div className="p-6">
-              <p className="text-gray-500 text-sm mb-4">
+              <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
                 Use this key to authenticate your iOS app with SupportKit.
               </p>
 
               <div className="flex items-center gap-3">
-                <code className="flex-1 bg-gray-50 border px-4 py-2.5 rounded-lg font-mono text-sm text-gray-700">
+                <code className="flex-1 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 px-4 py-2.5 rounded-lg font-mono text-sm text-gray-700 dark:text-slate-300">
                   {maskApiKey(currentOrg.apiKey)}
                 </code>
                 <button
                   onClick={copyApiKey}
-                  className="h-10 px-4 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                  className="h-10 px-4 bg-gray-900 dark:bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-slate-500 transition-colors"
                 >
                   {copied ? 'Copied!' : 'Copy'}
                 </button>
               </div>
 
-              <p className="text-gray-400 text-xs mt-3">
+              <p className="text-gray-400 dark:text-slate-500 text-xs mt-3">
                 Keep this key secret. Do not share it publicly or commit it to version control.
               </p>
             </div>
@@ -148,30 +148,30 @@ export default function SettingsPage() {
         )}
 
         {/* iOS Integration */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b">
-            <h2 className="font-semibold text-gray-900">iOS Integration</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+            <h2 className="font-semibold text-gray-900 dark:text-white">iOS Integration</h2>
           </div>
           <div className="p-6">
-            <p className="text-gray-500 text-sm mb-6">
+            <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">
               Add SupportKit to your iOS app with Swift Package Manager.
             </p>
 
             <div className="space-y-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-medium flex items-center justify-center">1</span>
-                  <h3 className="font-medium text-gray-900 text-sm">Add the package to your Xcode project</h3>
+                  <span className="w-6 h-6 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium flex items-center justify-center">1</span>
+                  <h3 className="font-medium text-gray-900 dark:text-white text-sm">Add the package to your Xcode project</h3>
                 </div>
-                <code className="block bg-gray-50 border px-4 py-2.5 rounded-lg font-mono text-sm text-gray-700">
+                <code className="block bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 px-4 py-2.5 rounded-lg font-mono text-sm text-gray-700 dark:text-slate-300">
                   https://github.com/Babu12345/AppSupportSDK
                 </code>
               </div>
 
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-medium flex items-center justify-center">2</span>
-                  <h3 className="font-medium text-gray-900 text-sm">Configure SupportKit in your app</h3>
+                  <span className="w-6 h-6 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium flex items-center justify-center">2</span>
+                  <h3 className="font-medium text-gray-900 dark:text-white text-sm">Configure SupportKit in your app</h3>
                 </div>
                 <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
 {`import SupportKit
@@ -183,8 +183,8 @@ SupportKit.configure(apiKey: "${currentOrg ? maskApiKey(currentOrg.apiKey) : 'YO
 
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-medium flex items-center justify-center">3</span>
-                  <h3 className="font-medium text-gray-900 text-sm">Present the chat view</h3>
+                  <span className="w-6 h-6 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium flex items-center justify-center">3</span>
+                  <h3 className="font-medium text-gray-900 dark:text-white text-sm">Present the chat view</h3>
                 </div>
                 <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
 {`// UIKit
@@ -201,14 +201,14 @@ SupportKit.presentChat(from: viewController)
         </div>
 
         {/* Danger Zone */}
-        <div className="bg-white rounded-xl border border-red-200">
-          <div className="px-6 py-4 border-b border-red-200">
-            <h2 className="font-semibold text-red-600">Danger Zone</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900/50">
+          <div className="px-6 py-4 border-b border-red-200 dark:border-red-900/50">
+            <h2 className="font-semibold text-red-600 dark:text-red-400">Danger Zone</h2>
           </div>
           <div className="p-6 flex items-center justify-between">
             <div>
-              <h3 className="font-medium text-gray-900">Sign Out</h3>
-              <p className="text-gray-500 text-sm">
+              <h3 className="font-medium text-gray-900 dark:text-white">Sign Out</h3>
+              <p className="text-gray-500 dark:text-slate-400 text-sm">
                 Sign out of the dashboard on this device
               </p>
             </div>
@@ -217,7 +217,7 @@ SupportKit.presentChat(from: viewController)
                 clearToken();
                 window.location.href = '/login';
               }}
-              className="h-9 px-4 border border-red-200 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 transition-colors"
+              className="h-9 px-4 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
             >
               Sign Out
             </button>
@@ -228,16 +228,16 @@ SupportKit.presentChat(from: viewController)
       {/* New Organization Modal */}
       {showNewOrgModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md">
             <form onSubmit={handleCreateOrg}>
-              <div className="px-6 py-4 border-b">
-                <h2 className="text-lg font-semibold text-gray-900">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Create New Organization
                 </h2>
               </div>
 
               <div className="p-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                   Organization Name
                 </label>
                 <input
@@ -245,16 +245,16 @@ SupportKit.presentChat(from: viewController)
                   value={newOrgName}
                   onChange={(e) => setNewOrgName(e.target.value)}
                   placeholder="My App"
-                  className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full h-10 px-3 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
 
-              <div className="px-6 py-4 border-t flex justify-end gap-3">
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowNewOrgModal(false)}
-                  className="h-9 px-4 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="h-9 px-4 text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
