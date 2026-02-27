@@ -12,6 +12,21 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
+
+// Log raw request body for debugging
+app.use((req, res, next) => {
+  let data = '';
+  req.on('data', chunk => { data += chunk; });
+  req.on('end', () => {
+    if (data) {
+      console.log('Raw request body:', JSON.stringify(data));
+      console.log('Body length:', data.length);
+      console.log('First 50 chars:', data.substring(0, 50));
+    }
+  });
+  next();
+});
+
 app.use(express.json());
 
 // Health check
