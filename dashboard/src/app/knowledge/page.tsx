@@ -83,68 +83,84 @@ export default function KnowledgePage() {
     <DashboardLayout>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Knowledge Base</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
+          <p className="text-gray-500 text-sm mt-1">
             Add content to train your AI support assistant
           </p>
         </div>
         <button
           onClick={openCreateModal}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="h-9 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
-          + Add Knowledge
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add Knowledge
         </button>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Loading...</div>
+        <div className="flex items-center justify-center py-12">
+          <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
       ) : sources.length === 0 ? (
-        <div className="bg-white rounded-xl shadow p-12 text-center">
-          <div className="text-5xl mb-4">📚</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <div className="bg-white rounded-xl border p-12 text-center">
+          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">
             No knowledge sources yet
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-500 text-sm mb-6">
             Add FAQs, help articles, or documentation to get started
           </p>
           <button
             onClick={openCreateModal}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="h-9 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             Add Your First Knowledge Source
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="bg-white rounded-xl border divide-y">
           {sources.map((source) => (
             <div
               key={source.id}
-              className="bg-white rounded-xl shadow p-6 hover:shadow-md transition-shadow"
+              className="p-4 hover:bg-gray-50 transition-colors"
             >
               <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-gray-900">
                     {source.title}
                   </h3>
-                  <p className="text-gray-600 mt-1 line-clamp-2">
+                  <p className="text-gray-500 text-sm mt-1 line-clamp-2">
                     {source.content}
                   </p>
-                  <p className="text-gray-400 text-sm mt-2">
+                  <p className="text-gray-400 text-xs mt-2">
                     Added {new Date(source.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex gap-2 ml-4">
+                <div className="flex gap-1 ml-4">
                   <button
                     onClick={() => openEditModal(source)}
-                    className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    Edit
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
                   </button>
                   <button
                     onClick={() => handleDelete(source.id)}
-                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
-                    Delete
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -158,21 +174,21 @@ export default function KnowledgePage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleSubmit}>
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold text-gray-900">
+              <div className="px-6 py-4 border-b">
+                <h2 className="text-lg font-semibold text-gray-900">
                   {editingSource ? 'Edit Knowledge Source' : 'Add Knowledge Source'}
                 </h2>
               </div>
 
               <div className="p-6 space-y-4">
                 {error && (
-                  <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                  <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
                     {error}
                   </div>
                 )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
                     Title
                   </label>
                   <input
@@ -182,13 +198,13 @@ export default function KnowledgePage() {
                       setFormData({ ...formData, title: e.target.value })
                     }
                     placeholder="e.g., How to reset password"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
                     Content
                   </label>
                   <textarea
@@ -198,24 +214,24 @@ export default function KnowledgePage() {
                     }
                     placeholder="Enter the knowledge content here. This can be FAQ answers, help documentation, product information, etc."
                     rows={10}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     required
                   />
                 </div>
               </div>
 
-              <div className="p-6 border-t flex justify-end gap-3">
+              <div className="px-6 py-4 border-t flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="h-9 px-4 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="h-9 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : editingSource ? 'Update' : 'Add'}
                 </button>
