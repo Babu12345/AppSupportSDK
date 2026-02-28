@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getToken, createCheckoutSession } from '@/lib/api';
+import { FREE_FEATURES, PRO_FEATURES, PRO_PRICE } from '@/lib/plans';
 
 const plans = [
   {
@@ -10,12 +11,7 @@ const plans = [
     price: '$0',
     period: '/month',
     description: 'Perfect for trying out SupportKit',
-    features: [
-      '100 AI conversations/month',
-      '1 organization',
-      '5 knowledge base articles',
-      'Community support',
-    ],
+    features: FREE_FEATURES,
     missing: [
       'Unlimited conversations',
       'Unlimited organizations',
@@ -27,16 +23,10 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: '$5',
+    price: PRO_PRICE,
     period: '/month',
     description: 'For growing apps that need more',
-    features: [
-      'Unlimited AI conversations',
-      'Unlimited organizations',
-      'Unlimited knowledge articles',
-      'Priority support',
-      '7-day free trial',
-    ],
+    features: PRO_FEATURES,
     missing: [],
     cta: 'Start Free Trial',
     highlighted: true,

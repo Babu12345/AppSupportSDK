@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { FREE_FEATURES, PRO_FEATURES, PRO_PRICE } from '@/lib/plans';
 
 export default function LandingPage() {
   return (
@@ -281,7 +282,7 @@ export default function LandingPage() {
               </div>
               <Link href="/login" className="block w-full h-11 flex items-center justify-center border border-gray-300 dark:border-slate-600 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800">Get Started</Link>
               <ul className="mt-6 space-y-3">
-                {['100 AI conversations/month', '1 organization', '5 knowledge articles', 'Community support'].map(f => (
+                {FREE_FEATURES.map(f => (
                   <li key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
                     <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                     {f}
@@ -295,12 +296,12 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold">Pro</h3>
               <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">For growing apps that need more</p>
               <div className="mt-4 mb-6">
-                <span className="text-4xl font-bold">$5</span>
+                <span className="text-4xl font-bold">{PRO_PRICE}</span>
                 <span className="text-gray-500 dark:text-slate-400">/month</span>
               </div>
               <Link href="/billing" className="block w-full h-11 flex items-center justify-center bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">Start Free Trial</Link>
               <ul className="mt-6 space-y-3">
-                {['Unlimited AI conversations', 'Unlimited organizations', 'Unlimited knowledge articles', 'Priority support', '7-day free trial'].map(f => (
+                {PRO_FEATURES.map(f => (
                   <li key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
                     <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                     {f}
