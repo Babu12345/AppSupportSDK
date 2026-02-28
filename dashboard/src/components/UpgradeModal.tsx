@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createCheckoutSession } from '@/lib/api';
+import { PRO_FEATURES, PRO_PRICE } from '@/lib/plans';
 
 interface UpgradeModalProps {
   open: boolean;
@@ -56,10 +57,10 @@ export function UpgradeModal({ open, onClose, limitType }: UpgradeModalProps) {
 
           {/* Features */}
           <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
-            Unlock everything with Pro for just $5/month:
+            Unlock everything with Pro for just {PRO_PRICE}/month:
           </p>
           <ul className="space-y-2 mb-6">
-            {['Unlimited AI conversations', 'Unlimited organizations', 'Unlimited knowledge articles', 'Priority support'].map(f => (
+            {PRO_FEATURES.map(f => (
               <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                 <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

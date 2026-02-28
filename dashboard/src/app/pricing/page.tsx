@@ -12,12 +12,7 @@ const plans = [
     period: '/month',
     description: 'Perfect for trying out SupportKit',
     features: FREE_FEATURES,
-    missing: [
-      'Unlimited conversations',
-      'Unlimited organizations',
-      'Unlimited knowledge articles',
-      'Priority support',
-    ],
+    missing: PRO_FEATURES.filter(f => !f.includes('trial')),
     cta: 'Get Started',
     highlighted: false,
   },

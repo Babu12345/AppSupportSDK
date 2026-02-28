@@ -1,11 +1,11 @@
-export const PRO_PRICE_MONTHLY = 5;
-
 function envInt(key: string, fallback: number): number {
   const val = process.env[key];
   if (!val) return fallback;
   const parsed = parseInt(val, 10);
   return isNaN(parsed) ? fallback : parsed;
 }
+
+export const PRO_PRICE_MONTHLY = envInt('PRO_PRICE_MONTHLY', 5);
 
 export const SUBSCRIPTION_LIMITS = {
   free: {

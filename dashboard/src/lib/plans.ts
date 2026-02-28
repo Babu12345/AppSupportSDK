@@ -26,4 +26,4 @@ export const PRO_FEATURES = [
   '7-day free trial',
 ];
 
-export const PRO_PRICE = '$5';
+export const PRO_PRICE = `$${process.env.NEXT_PUBLIC_PRO_PRICE_MONTHLY || '5'}`;
