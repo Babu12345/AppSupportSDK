@@ -8,19 +8,22 @@ import { getToken } from '@/lib/api';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { isLoading, user, organizations, currentOrg, switchOrganization, handleCreateOrg } = useAuth();
+  const { isLoading, user, organizations, currentOrg, switchOrganization, handleCreateOrg, refreshAuth } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
       const token = getToken();
-      if (!token) {
+      if (token) {
+        // Token exists but user not loaded yet (e.g. after login redirect)
+        refreshAuth();
+      } else {
         router.push('/login');
       }
     }
-  }, [isLoading, user, router]);
+  }, [isLoading, user, router, refreshAuth]);
 
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
       <div className="flex min-h-screen bg-gray-50 dark:bg-slate-950">
         {/* Skeleton sidebar */}
@@ -48,10 +51,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (

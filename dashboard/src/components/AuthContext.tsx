@@ -19,6 +19,7 @@ interface AuthState {
   currentOrg: Organization | null;
   switchOrganization: (orgId: string) => void;
   handleCreateOrg: (name: string) => Promise<void>;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -30,34 +31,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
 
-  useEffect(() => {
-    async function checkAuth() {
-      const token = getToken();
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const { user, organizations } = await getCurrentUser();
-        setUser(user);
-        setOrganizations(organizations);
-
-        const savedOrgId = getCurrentOrgId();
-        const org = organizations.find(o => o.id === savedOrgId) || organizations[0];
-        if (org) {
-          setCurrentOrg(org);
-          setCurrentOrgId(org.id);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-      } finally {
-        setIsLoading(false);
-      }
+  const refreshAuth = useCallback(async () => {
+    const token = getToken();
+    if (!token) {
+      setUser(null);
+      setOrganizations([]);
+      setCurrentOrg(null);
+      setIsLoading(false);
+      return;
     }
 
-    checkAuth();
+    setIsLoading(true);
+    try {
+      const { user, organizations } = await getCurrentUser();
+      setUser(user);
+      setOrganizations(organizations);
+
+      const savedOrgId = getCurrentOrgId();
+      const org = organizations.find(o => o.id === savedOrgId) || organizations[0];
+      if (org) {
+        setCurrentOrg(org);
+        setCurrentOrgId(org.id);
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    refreshAuth();
+  }, [refreshAuth]);
 
   const switchOrganization = useCallback((orgId: string) => {
     const org = organizations.find(o => o.id === orgId);
@@ -84,6 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       currentOrg,
       switchOrganization,
       handleCreateOrg,
+      refreshAuth,
     }}>
       {children}
     </AuthContext.Provider>
