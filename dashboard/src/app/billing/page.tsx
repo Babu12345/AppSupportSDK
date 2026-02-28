@@ -152,7 +152,7 @@ export default function BillingPage() {
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
                 <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-3">Upgrade to Pro</h3>
                 <ul className="space-y-2 mb-4">
-                  {PRO_FEATURES.map(f => (
+                  {PRO_FEATURES.filter(f => !stats?.hasUsedTrial || !f.includes('trial')).map(f => (
                     <li key={f} className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
                       <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -166,7 +166,7 @@ export default function BillingPage() {
                   disabled={actionLoading}
                   className="h-10 px-5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
-                  Start Free Trial
+                  {stats?.hasUsedTrial ? 'Upgrade to Pro' : 'Start Free Trial'}
                 </button>
               </div>
             )}

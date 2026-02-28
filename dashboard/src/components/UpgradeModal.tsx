@@ -8,6 +8,7 @@ interface UpgradeModalProps {
   open: boolean;
   onClose: () => void;
   limitType?: 'conversations' | 'organizations' | 'knowledge';
+  hasUsedTrial?: boolean;
 }
 
 const limitMessages: Record<string, string> = {
@@ -16,7 +17,7 @@ const limitMessages: Record<string, string> = {
   knowledge: "You've reached your knowledge article limit.",
 };
 
-export function UpgradeModal({ open, onClose, limitType }: UpgradeModalProps) {
+export function UpgradeModal({ open, onClose, limitType, hasUsedTrial }: UpgradeModalProps) {
   const [loading, setLoading] = useState(false);
 
   if (!open) return null;
@@ -60,7 +61,7 @@ export function UpgradeModal({ open, onClose, limitType }: UpgradeModalProps) {
             Unlock everything with Pro for just {PRO_PRICE}/month:
           </p>
           <ul className="space-y-2 mb-6">
-            {PRO_FEATURES.map(f => (
+            {PRO_FEATURES.filter(f => !hasUsedTrial || !f.includes('trial')).map(f => (
               <li key={f} className="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                 <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -77,7 +78,7 @@ export function UpgradeModal({ open, onClose, limitType }: UpgradeModalProps) {
               disabled={loading}
               className="flex-1 h-10 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
-              {loading ? 'Loading...' : 'Start Free Trial'}
+              {loading ? 'Loading...' : hasUsedTrial ? 'Upgrade to Pro' : 'Start Free Trial'}
             </button>
             <button
               onClick={onClose}

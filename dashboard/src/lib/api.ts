@@ -186,6 +186,7 @@ export async function deleteKnowledgeSource(id: string): Promise<void> {
 // Billing API
 export interface UsageStats {
   tier: string;
+  hasUsedTrial: boolean;
   conversations: {
     used: number;
     limit: number;

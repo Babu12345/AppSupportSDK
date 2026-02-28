@@ -308,6 +308,7 @@ router.get('/usage', async (req: Request, res: Response) => {
 
     res.json({
       tier: user.subscriptionTier,
+      hasUsedTrial: user.hasUsedTrial,
       conversations: {
         used: conversationsUsed,
         limit: limits.conversationsPerMonth,
