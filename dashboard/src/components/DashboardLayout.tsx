@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar';
 import {
   getToken,
   getCurrentUser,
+  createOrganization,
   setCurrentOrgId,
   getCurrentOrgId,
   Organization,
@@ -59,6 +60,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleCreateOrg = async (name: string) => {
+    const newOrg = await createOrganization(name);
+    setOrganizations(prev => [...prev, newOrg]);
+    setCurrentOrg(newOrg);
+    setCurrentOrgId(newOrg.id);
+    window.location.reload();
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950">
@@ -81,6 +90,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         organizations={organizations}
         currentOrg={currentOrg}
         onSwitchOrg={switchOrganization}
+        onCreateOrg={handleCreateOrg}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

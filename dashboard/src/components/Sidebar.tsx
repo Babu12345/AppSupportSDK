@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { clearToken, User, Organization } from '@/lib/api';
+import { clearToken, User, Organization, createCheckoutSession, LimitReachedError } from '@/lib/api';
 
 const navItems = [
   {
@@ -49,12 +50,18 @@ interface SidebarProps {
   organizations: Organization[];
   currentOrg: Organization | null;
   onSwitchOrg: (orgId: string) => void;
+  onCreateOrg: (name: string) => Promise<void>;
   open?: boolean;
   onClose?: () => void;
 }
 
-export function Sidebar({ user, organizations, currentOrg, onSwitchOrg, open, onClose }: SidebarProps) {
+export function Sidebar({ user, organizations, currentOrg, onSwitchOrg, onCreateOrg, open, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const [isCreating, setIsCreating] = useState(false);
+  const [newOrgName, setNewOrgName] = useState('');
+  const [createLoading, setCreateLoading] = useState(false);
+  const [limitReached, setLimitReached] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
 
   const handleSignOut = () => {
     clearToken();
@@ -93,22 +100,111 @@ export function Sidebar({ user, organizations, currentOrg, onSwitchOrg, open, on
         </div>
 
         {/* Organization Selector */}
-        {organizations.length > 0 && (
-          <div className="px-4 py-4 border-b border-gray-200 dark:border-slate-700">
-            <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1.5">Organization</label>
-            <select
-              value={currentOrg?.id || ''}
-              onChange={(e) => onSwitchOrg(e.target.value)}
-              className="w-full h-9 px-3 rounded-lg border border-gray-200 dark:border-slate-600 text-sm bg-gray-50 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        <div className="px-4 py-4 border-b border-gray-200 dark:border-slate-700">
+          <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1.5">Organization</label>
+          {limitReached ? (
+            <div className="space-y-2">
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Free plan allows 1 organization. Upgrade to Pro for unlimited.
+              </p>
+              <button
+                onClick={async () => {
+                  setUpgradeLoading(true);
+                  try {
+                    const { url } = await createCheckoutSession();
+                    window.location.href = url;
+                  } catch {
+                    // fallback to billing page
+                    window.location.href = '/billing';
+                  } finally {
+                    setUpgradeLoading(false);
+                  }
+                }}
+                disabled={upgradeLoading}
+                className="w-full h-8 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {upgradeLoading ? 'Redirecting...' : 'Upgrade to Pro'}
+              </button>
+              <button
+                onClick={() => { setLimitReached(false); setIsCreating(false); setNewOrgName(''); }}
+                className="w-full h-8 text-xs font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : isCreating ? (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!newOrgName.trim()) return;
+                setCreateLoading(true);
+                try {
+                  await onCreateOrg(newOrgName.trim());
+                  setNewOrgName('');
+                  setIsCreating(false);
+                } catch (err: unknown) {
+                  if (err instanceof LimitReachedError) {
+                    setLimitReached(true);
+                  }
+                } finally {
+                  setCreateLoading(false);
+                }
+              }}
+              className="space-y-2"
             >
-              {organizations.map((org) => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+              <input
+                autoFocus
+                value={newOrgName}
+                onChange={(e) => setNewOrgName(e.target.value)}
+                placeholder="Organization name"
+                className="w-full h-9 px-3 rounded-lg border border-gray-200 dark:border-slate-600 text-sm bg-gray-50 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={createLoading}
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={createLoading || !newOrgName.trim()}
+                  className="flex-1 h-8 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {createLoading ? 'Creating...' : 'Create'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setIsCreating(false); setNewOrgName(''); }}
+                  disabled={createLoading}
+                  className="flex-1 h-8 text-xs font-medium rounded-lg border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <>
+              {organizations.length > 0 && (
+                <select
+                  value={currentOrg?.id || ''}
+                  onChange={(e) => onSwitchOrg(e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg border border-gray-200 dark:border-slate-600 text-sm bg-gray-50 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {organizations.map((org) => (
+                    <option key={org.id} value={org.id}>
+                      {org.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <button
+                onClick={() => setIsCreating(true)}
+                className="mt-2 w-full flex items-center justify-center gap-1.5 h-8 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Organization
+              </button>
+            </>
+          )}
+        </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1">
