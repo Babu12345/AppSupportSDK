@@ -47,7 +47,7 @@ export default function ContactPage() {
           className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-6"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          {document.referrer ? 'Back' : 'Go to SupportKit'}
+          {typeof document !== 'undefined' && document.referrer ? 'Back' : 'Go to SupportKit'}
         </button>
       </div>
       <div className="max-w-2xl mx-auto bg-white dark:bg-slate-900 rounded-lg shadow dark:shadow-slate-800/50 p-8">
