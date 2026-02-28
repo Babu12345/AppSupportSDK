@@ -33,36 +33,56 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative overflow-hidden py-20 md:py-32">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-transparent to-blue-50 dark:from-blue-950/20 dark:via-transparent dark:to-blue-950/20" />
-        <div className="relative max-w-6xl mx-auto px-4 md:px-8 text-center">
-          <div className="mx-auto max-w-3xl">
-            <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-4 tracking-wide uppercase">
-              RevenueCat, but for App Support
-            </p>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              <span className="text-blue-600">AI-Powered</span> Customer Support for Your App
-            </h1>
-            <p className="mt-6 text-lg text-gray-600 dark:text-slate-400 md:text-xl max-w-2xl mx-auto">
-              Drop-in support chat that actually understands your product.
-              Train it with your knowledge base, integrate in 3 lines of code.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/login"
-                className="h-12 px-8 inline-flex items-center justify-center rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors gap-2"
-              >
-                Start for Free
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-              </Link>
-              <a
-                href="#how-it-works"
-                className="h-12 px-8 inline-flex items-center justify-center rounded-lg border border-gray-300 dark:border-slate-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors"
-              >
-                See How It Works
-              </a>
+        <div className="relative max-w-6xl mx-auto px-4 md:px-8">
+          <div className="flex flex-col md:flex-row items-center gap-12 md:gap-16">
+            {/* Left: Text */}
+            <div className="flex-1 text-center md:text-left">
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-4 tracking-wide uppercase">
+                RevenueCat, but for App Support
+              </p>
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                <span className="text-blue-600">AI-Powered</span> Customer Support for Your App
+              </h1>
+              <p className="mt-6 text-lg text-gray-600 dark:text-slate-400 md:text-xl">
+                Drop-in support chat that actually understands your product.
+                Train it with your knowledge base, integrate in 3 lines of code.
+              </p>
+              <div className="mt-10 flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-4">
+                <Link
+                  href="/login"
+                  className="h-12 px-8 inline-flex items-center justify-center rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors gap-2"
+                >
+                  Start for Free
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </Link>
+                <a
+                  href="#how-it-works"
+                  className="h-12 px-8 inline-flex items-center justify-center rounded-lg border border-gray-300 dark:border-slate-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors"
+                >
+                  See How It Works
+                </a>
+              </div>
+              <p className="mt-4 text-xs text-gray-400 dark:text-slate-500">
+                No credit card required. Free tier included.
+              </p>
             </div>
-            <p className="mt-4 text-xs text-gray-400 dark:text-slate-500">
-              No credit card required. Free tier included.
-            </p>
+            {/* Right: Phone mockup with demo video */}
+            <div className="flex-shrink-0">
+              <div className="relative mx-auto w-[280px] h-[580px] bg-black rounded-[3rem] border-[8px] border-gray-800 dark:border-gray-700 shadow-2xl overflow-hidden">
+                {/* Notch */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-black rounded-b-2xl z-10" />
+                {/* Video */}
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  <source src="/demo.mp4" type="video/mp4" />
+                </video>
+              </div>
+            </div>
           </div>
         </div>
       </section>
