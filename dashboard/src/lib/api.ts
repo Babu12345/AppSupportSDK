@@ -191,6 +191,7 @@ export interface UsageStats {
     used: number;
     limit: number;
     remaining: number;
+    orgUsed: number | null;
   };
   limits: {
     maxOrganizations: number;
@@ -199,8 +200,9 @@ export interface UsageStats {
   };
 }
 
-export async function getUsageStats(): Promise<UsageStats> {
-  return apiRequest('/v1/auth/usage');
+export async function getUsageStats(orgId?: string): Promise<UsageStats> {
+  const params = orgId ? `?orgId=${encodeURIComponent(orgId)}` : '';
+  return apiRequest(`/v1/auth/usage${params}`);
 }
 
 export async function createCheckoutSession(): Promise<{ url: string }> {

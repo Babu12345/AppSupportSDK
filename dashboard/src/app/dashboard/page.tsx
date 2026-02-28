@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { useAuth } from '@/components/AuthContext';
 import { getKnowledgeSources, getUsageStats, KnowledgeSource, UsageStats } from '@/lib/api';
 import Link from 'next/link';
 
 export default function DashboardPage() {
+  const { currentOrg } = useAuth();
   const [sources, setSources] = useState<KnowledgeSource[]>([]);
   const [stats, setStats] = useState<UsageStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ export default function DashboardPage() {
       try {
         const [knowledgeData, usageData] = await Promise.all([
           getKnowledgeSources(),
-          getUsageStats(),
+          getUsageStats(currentOrg?.id),
         ]);
         setSources(knowledgeData.sources);
         setStats(usageData);
@@ -26,7 +28,7 @@ export default function DashboardPage() {
       }
     }
     loadData();
-  }, []);
+  }, [currentOrg?.id]);
 
   return (
     <DashboardLayout>
@@ -67,7 +69,12 @@ export default function DashboardPage() {
               <div className="text-sm text-gray-500 dark:text-slate-400">Conversations This Month</div>
             </div>
           </div>
-          {stats && stats.conversations.limit !== Infinity && (
+          {stats && stats.conversations.orgUsed != null && (
+            <p className="text-xs text-gray-400 dark:text-slate-500">
+              {stats.conversations.orgUsed} from {currentOrg?.name || 'this org'}
+            </p>
+          )}
+          {stats && stats.conversations.limit != null && stats.conversations.limit !== Infinity && (
             <p className="text-xs text-gray-400 dark:text-slate-500">
               {stats.conversations.remaining} of {stats.conversations.limit} remaining
             </p>

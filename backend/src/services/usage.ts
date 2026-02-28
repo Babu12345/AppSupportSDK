@@ -32,6 +32,15 @@ export async function checkConversationLimit(userId: string, tier: SubscriptionT
   };
 }
 
+export async function getOrgConversationsThisMonth(organizationId: string): Promise<number> {
+  return prisma.chatEvent.count({
+    where: {
+      organizationId,
+      createdAt: { gte: getStartOfMonth() },
+    },
+  });
+}
+
 export async function recordConversation(userId: string, organizationId?: string): Promise<void> {
   await prisma.chatEvent.create({ data: { userId, organizationId } });
 }

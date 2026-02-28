@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { JWT_SECRET } from '../config';
-import { getConversationsThisMonth } from '../services/usage';
+import { getConversationsThisMonth, getOrgConversationsThisMonth } from '../services/usage';
 import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '../constants';
 const router = Router();
 const prisma = new PrismaClient();
@@ -306,6 +306,9 @@ router.get('/usage', async (req: Request, res: Response) => {
     const limits = SUBSCRIPTION_LIMITS[tier];
     const conversationsUsed = await getConversationsThisMonth(user.id);
 
+    const orgId = req.query.orgId as string | undefined;
+    const orgConversations = orgId ? await getOrgConversationsThisMonth(orgId) : null;
+
     res.json({
       tier: user.subscriptionTier,
       hasUsedTrial: user.hasUsedTrial,
@@ -315,6 +318,7 @@ router.get('/usage', async (req: Request, res: Response) => {
         remaining: limits.conversationsPerMonth === Infinity
           ? Infinity
           : Math.max(0, limits.conversationsPerMonth - conversationsUsed),
+        orgUsed: orgConversations,
       },
       limits: {
         maxOrganizations: limits.maxOrganizations,
