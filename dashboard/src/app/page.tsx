@@ -97,8 +97,13 @@ export default function LandingPage() {
                   <span className="text-gray-400 dark:text-slate-500">// Configure with your API key</span>{'\n'}
                   <span className="text-blue-600 dark:text-blue-400">SupportKit</span>.<span className="text-yellow-600 dark:text-yellow-400">configure</span>(apiKey: <span className="text-green-600 dark:text-green-400">&quot;sk_live_...&quot;</span>){'\n'}
                   {'\n'}
-                  <span className="text-gray-400 dark:text-slate-500">// Present the support chat</span>{'\n'}
-                  <span className="text-blue-600 dark:text-blue-400">SupportKit</span>.<span className="text-yellow-600 dark:text-yellow-400">presentChat</span>(from: viewController)
+                  <span className="text-gray-400 dark:text-slate-500">// UIKit</span>{'\n'}
+                  <span className="text-blue-600 dark:text-blue-400">SupportKit</span>.<span className="text-yellow-600 dark:text-yellow-400">presentChat</span>(from: viewController){'\n'}
+                  {'\n'}
+                  <span className="text-gray-400 dark:text-slate-500">// SwiftUI</span>{'\n'}
+                  .<span className="text-yellow-600 dark:text-yellow-400">sheet</span>(isPresented: $showChat) {'{'}{'\n'}
+                  {'    '}<span className="text-blue-600 dark:text-blue-400">SupportKit</span>.<span className="text-yellow-600 dark:text-yellow-400">chatView</span>(){'\n'}
+                  {'}'}
                 </code>
               </pre>
             </div>
