@@ -60,7 +60,11 @@ export default function BillingPage() {
         ) : stats ? (
           <div className="space-y-6">
             {/* Current Plan */}
-            <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-6">
+            <div className={`border rounded-xl p-6 ${
+              isPro
+                ? 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'
+                : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+            }`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Current Plan</h2>
@@ -86,13 +90,25 @@ export default function BillingPage() {
                   Manage Billing
                 </button>
               ) : (
-                <button
-                  onClick={handleUpgrade}
-                  disabled={actionLoading}
-                  className="h-10 px-5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  Upgrade to Pro — {PRO_PRICE}/month
-                </button>
+                <>
+                  <ul className="space-y-2 mb-4">
+                    {PRO_FEATURES.filter(f => !stats?.hasUsedTrial || !f.includes('trial')).map(f => (
+                      <li key={f} className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                        <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={handleUpgrade}
+                    disabled={actionLoading}
+                    className="h-10 px-5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {stats?.hasUsedTrial ? `Upgrade to Pro — ${PRO_PRICE}/month` : 'Start Free Trial'}
+                  </button>
+                </>
               )}
             </div>
 
@@ -147,29 +163,6 @@ export default function BillingPage() {
               )}
             </div>
 
-            {/* Pro Features (show only for free users) */}
-            {!isPro && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
-                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-3">Upgrade to Pro</h3>
-                <ul className="space-y-2 mb-4">
-                  {PRO_FEATURES.filter(f => !stats?.hasUsedTrial || !f.includes('trial')).map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
-                      <svg className="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={handleUpgrade}
-                  disabled={actionLoading}
-                  className="h-10 px-5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {stats?.hasUsedTrial ? 'Upgrade to Pro' : 'Start Free Trial'}
-                </button>
-              </div>
-            )}
           </div>
         ) : (
           <p className="text-gray-500 dark:text-slate-400">Failed to load billing information.</p>
