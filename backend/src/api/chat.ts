@@ -94,7 +94,7 @@ router.post('/', authenticateApiKey, async (req: Request, res: Response) => {
 
     // Record conversation usage
     if (org) {
-      await recordConversation(org.user.id);
+      await recordConversation(org.user.id, org.id);
     }
 
     res.json({

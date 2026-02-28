@@ -32,6 +32,6 @@ export async function checkConversationLimit(userId: string, tier: SubscriptionT
   };
 }
 
-export async function recordConversation(userId: string): Promise<void> {
-  await prisma.chatEvent.create({ data: { userId } });
+export async function recordConversation(userId: string, organizationId?: string): Promise<void> {
+  await prisma.chatEvent.create({ data: { userId, organizationId } });
 }
