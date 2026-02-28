@@ -50,7 +50,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">4. Third-Party Services</h2>
             <p>We use the following third-party services to operate our platform:</p>
             <ul className="list-disc pl-6 space-y-1">
-              <li><strong>Anthropic (Claude):</strong> AI model provider for generating support responses. Conversation data is sent to Anthropic for processing.</li>
+              <li><strong>AI Model Providers:</strong> We use third-party AI models to generate support responses. Conversation data is sent to our AI providers for processing.</li>
               <li><strong>Google OAuth:</strong> For optional Google sign-in authentication. We receive your name and email from Google.</li>
               <li><strong>Railway:</strong> Cloud hosting provider for our backend infrastructure.</li>
             </ul>
