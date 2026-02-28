@@ -15,6 +15,12 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
+              href="/docs"
+              className="text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              Docs
+            </Link>
+            <Link
               href="/pricing"
               className="text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
@@ -392,6 +398,7 @@ export default function LandingPage() {
               <h4 className="text-sm font-semibold mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-gray-500 dark:text-slate-400">
                 <li><a href="#how-it-works" className="hover:text-gray-900 dark:hover:text-white transition-colors">How It Works</a></li>
+                <li><Link href="/docs" className="hover:text-gray-900 dark:hover:text-white transition-colors">Docs</Link></li>
                 <li><Link href="/login" className="hover:text-gray-900 dark:hover:text-white transition-colors">Dashboard</Link></li>
               </ul>
             </div>
