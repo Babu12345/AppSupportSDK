@@ -145,18 +145,113 @@ export default function DashboardPage() {
               3
             </div>
             <div className="flex-1">
+              <h3 className="font-medium text-gray-900 dark:text-white">Install the Package</h3>
+              <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
+                Add SupportKit to your Xcode project via Swift Package Manager:
+              </p>
+              <ol className="text-sm text-gray-600 dark:text-slate-300 mt-2 space-y-1.5 list-decimal list-inside">
+                <li>In Xcode, go to <span className="font-medium text-gray-900 dark:text-white">File &rarr; Add Package Dependencies</span></li>
+                <li>Paste the repository URL:</li>
+              </ol>
+              <div className="mt-2 flex items-center gap-2 max-w-lg">
+                <code className="flex-1 bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-3 py-2 rounded-lg text-sm font-mono truncate">
+                  https://github.com/Babu12345/SupportKit
+                </code>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText('https://github.com/Babu12345/SupportKit');
+                    const btn = document.getElementById('copy-url-btn');
+                    if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 2000); }
+                  }}
+                  id="copy-url-btn"
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shrink-0"
+                >
+                  Copy
+                </button>
+              </div>
+              <ol className="text-sm text-gray-600 dark:text-slate-300 mt-1.5 space-y-1.5 list-decimal list-inside" start={3}>
+                <li>Select the latest version and click <span className="font-medium text-gray-900 dark:text-white">Add Package</span></li>
+              </ol>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-4 p-4 md:p-6">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium text-sm shrink-0">
+              4
+            </div>
+            <div className="flex-1">
               <h3 className="font-medium text-gray-900 dark:text-white">Integrate SDK</h3>
               <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Add a few lines of code to your iOS app:</p>
-              <pre className="bg-gray-900 text-gray-100 p-3 md:p-4 rounded-lg mt-3 text-xs md:text-sm overflow-x-auto max-w-full">
-{`import SupportKit
 
-SupportKit.configure(
-  apiKey: "your-api-key"
-)
-SupportKit.presentChat(
-  from: viewController
-)`}
-              </pre>
+              {/* UIKit */}
+              <div className="mt-3 rounded-xl overflow-hidden border border-gray-700 dark:border-slate-600 max-w-lg">
+                <div className="flex items-center justify-between px-4 py-2 bg-gray-800 dark:bg-slate-700 border-b border-gray-700 dark:border-slate-600">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2v-2zm0-10h2v8h-2V6z" />
+                    </svg>
+                    <span className="text-xs font-medium text-gray-400 dark:text-slate-400">UIKit</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`import SupportKit\n\nSupportKit.configure(\n    apiKey: "your-api-key"\n)\nSupportKit.presentChat(\n    from: viewController\n)`);
+                      const btn = document.getElementById('copy-uikit-btn');
+                      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 2000); }
+                    }}
+                    id="copy-uikit-btn"
+                    className="text-xs text-gray-400 dark:text-slate-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-gray-700 dark:hover:bg-slate-600"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <pre className="bg-gray-900 dark:bg-slate-800 p-4 text-sm leading-relaxed overflow-x-auto">
+                  <code>
+                    <span className="text-pink-400">import</span><span className="text-gray-100"> SupportKit</span>{'\n'}
+                    {'\n'}
+                    <span className="text-gray-100">SupportKit</span><span className="text-gray-400">.</span><span className="text-blue-400">configure</span><span className="text-gray-400">(</span>{'\n'}
+                    <span className="text-gray-100">    apiKey</span><span className="text-gray-400">: </span><span className="text-green-400">&quot;your-api-key&quot;</span>{'\n'}
+                    <span className="text-gray-400">)</span>{'\n'}
+                    <span className="text-gray-100">SupportKit</span><span className="text-gray-400">.</span><span className="text-blue-400">presentChat</span><span className="text-gray-400">(</span>{'\n'}
+                    <span className="text-gray-100">    from</span><span className="text-gray-400">: </span><span className="text-gray-100">viewController</span>{'\n'}
+                    <span className="text-gray-400">)</span>
+                  </code>
+                </pre>
+              </div>
+
+              {/* SwiftUI */}
+              <div className="mt-3 rounded-xl overflow-hidden border border-gray-700 dark:border-slate-600 max-w-lg">
+                <div className="flex items-center justify-between px-4 py-2 bg-gray-800 dark:bg-slate-700 border-b border-gray-700 dark:border-slate-600">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2v-2zm0-10h2v8h-2V6z" />
+                    </svg>
+                    <span className="text-xs font-medium text-gray-400 dark:text-slate-400">SwiftUI</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`import SupportKit\n\nSupportKit.configure(\n    apiKey: "your-api-key"\n)\n.sheet(isPresented: $showChat) {\n    SupportKit.chatView()\n}`);
+                      const btn = document.getElementById('copy-swiftui-btn');
+                      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 2000); }
+                    }}
+                    id="copy-swiftui-btn"
+                    className="text-xs text-gray-400 dark:text-slate-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-gray-700 dark:hover:bg-slate-600"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <pre className="bg-gray-900 dark:bg-slate-800 p-4 text-sm leading-relaxed overflow-x-auto">
+                  <code>
+                    <span className="text-pink-400">import</span><span className="text-gray-100"> SupportKit</span>{'\n'}
+                    {'\n'}
+                    <span className="text-gray-100">SupportKit</span><span className="text-gray-400">.</span><span className="text-blue-400">configure</span><span className="text-gray-400">(</span>{'\n'}
+                    <span className="text-gray-100">    apiKey</span><span className="text-gray-400">: </span><span className="text-green-400">&quot;your-api-key&quot;</span>{'\n'}
+                    <span className="text-gray-400">)</span>{'\n'}
+                    <span className="text-gray-400">.</span><span className="text-blue-400">sheet</span><span className="text-gray-400">(</span><span className="text-gray-100">isPresented</span><span className="text-gray-400">: </span><span className="text-gray-100">$showChat</span><span className="text-gray-400">)</span><span className="text-gray-100"> </span><span className="text-gray-400">{'{'}</span>{'\n'}
+                    <span className="text-gray-100">    SupportKit</span><span className="text-gray-400">.</span><span className="text-blue-400">chatView</span><span className="text-gray-400">()</span>{'\n'}
+                    <span className="text-gray-400">{'}'}</span>
+                  </code>
+                </pre>
+              </div>
             </div>
           </div>
         </div>
