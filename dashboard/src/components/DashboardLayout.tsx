@@ -1,80 +1,51 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
-import {
-  getToken,
-  getCurrentUser,
-  createOrganization,
-  setCurrentOrgId,
-  getCurrentOrgId,
-  Organization,
-  User
-} from '@/lib/api';
+import { useAuth } from './AuthContext';
+import { getToken } from '@/lib/api';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
+  const { isLoading, user, organizations, currentOrg, switchOrganization, handleCreateOrg } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    async function checkAuth() {
+    if (!isLoading && !user) {
       const token = getToken();
       if (!token) {
         router.push('/login');
-        return;
-      }
-
-      try {
-        const { user, organizations } = await getCurrentUser();
-        setUser(user);
-        setOrganizations(organizations);
-
-        const savedOrgId = getCurrentOrgId();
-        const org = organizations.find(o => o.id === savedOrgId) || organizations[0];
-        if (org) {
-          setCurrentOrg(org);
-          setCurrentOrgId(org.id);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        router.push('/login');
-      } finally {
-        setIsLoading(false);
       }
     }
-
-    checkAuth();
-  }, [router]);
-
-  const switchOrganization = (orgId: string) => {
-    const org = organizations.find(o => o.id === orgId);
-    if (org) {
-      setCurrentOrg(org);
-      setCurrentOrgId(orgId);
-      window.location.reload();
-    }
-  };
-
-  const handleCreateOrg = async (name: string) => {
-    const newOrg = await createOrganization(name);
-    setOrganizations(prev => [...prev, newOrg]);
-    setCurrentOrg(newOrg);
-    setCurrentOrgId(newOrg.id);
-    window.location.reload();
-  };
+  }, [isLoading, user, router]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950">
-        <svg className="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+      <div className="flex min-h-screen bg-gray-50 dark:bg-slate-950">
+        {/* Skeleton sidebar */}
+        <aside className="hidden md:flex w-64 flex-col border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-700">
+            <div className="h-6 w-32 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" />
+          </div>
+          <div className="px-4 py-4 border-b border-gray-200 dark:border-slate-700">
+            <div className="h-3 w-20 bg-gray-200 dark:bg-slate-700 rounded animate-pulse mb-2" />
+            <div className="h-9 bg-gray-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+          </div>
+          <div className="flex-1 px-3 py-4 space-y-2">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-9 bg-gray-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        </aside>
+        {/* Skeleton content */}
+        <div className="flex-1 p-4 md:p-8">
+          <div className="space-y-4 animate-pulse">
+            <div className="h-8 w-48 bg-gray-200 dark:bg-slate-800 rounded" />
+            <div className="h-32 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+            <div className="h-48 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+          </div>
+        </div>
       </div>
     );
   }
