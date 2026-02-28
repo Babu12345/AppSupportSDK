@@ -43,7 +43,7 @@ export default function BillingPage() {
   };
 
   const isPro = stats?.tier === 'pro';
-  const conversationPercent = stats && stats.conversations.limit !== Infinity
+  const conversationPercent = stats && stats.conversations.limit != null && stats.conversations.limit !== Infinity
     ? Math.min(100, Math.round((stats.conversations.used / stats.conversations.limit) * 100))
     : 0;
 
@@ -122,7 +122,7 @@ export default function BillingPage() {
                     <span className="text-sm text-gray-700 dark:text-slate-300">AI Conversations</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {stats.conversations.used}
-                      {stats.conversations.limit === Infinity ? '' : ` / ${stats.conversations.limit}`}
+                      {stats.conversations.limit == null || stats.conversations.limit === Infinity ? ' / Unlimited' : ` / ${stats.conversations.limit}`}
                     </span>
                   </div>
                   {!isPro && (
