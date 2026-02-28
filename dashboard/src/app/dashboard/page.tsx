@@ -140,23 +140,25 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-start gap-4 p-4 md:p-6">
+          <div className="flex items-start gap-3 md:gap-4 p-4 md:p-6">
             <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-medium text-sm shrink-0">
               3
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h3 className="font-medium text-gray-900 dark:text-white">Install the Package</h3>
               <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
-                Add SupportKit to your Xcode project via Swift Package Manager:
+                Add SupportKit via Swift Package Manager:
               </p>
-              <ol className="text-sm text-gray-600 dark:text-slate-300 mt-2 space-y-1.5 list-decimal list-inside">
-                <li>In Xcode, go to <span className="font-medium text-gray-900 dark:text-white">File &rarr; Add Package Dependencies</span></li>
-                <li>Paste the repository URL:</li>
-              </ol>
-              <div className="mt-2 flex items-center gap-2 max-w-lg">
-                <code className="flex-1 bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 px-3 py-2 rounded-lg text-sm font-mono truncate">
-                  https://github.com/Babu12345/SupportKit
-                </code>
+              <div className="text-sm text-gray-600 dark:text-slate-300 mt-2 space-y-1.5">
+                <p>1. In Xcode, go to <span className="font-medium text-gray-900 dark:text-white">File &rarr; Add Package Dependencies</span></p>
+                <p>2. Paste the repository URL:</p>
+              </div>
+              <div className="mt-2 inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700/50 px-3 py-2.5 max-w-full">
+                <div className="min-w-0 overflow-x-auto">
+                  <code className="text-xs font-mono text-gray-800 dark:text-slate-200 whitespace-nowrap">
+                    https://github.com/Babu12345/SupportKit
+                  </code>
+                </div>
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText('https://github.com/Babu12345/SupportKit');
@@ -164,14 +166,14 @@ export default function DashboardPage() {
                     if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 2000); }
                   }}
                   id="copy-url-btn"
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shrink-0"
+                  className="text-xs text-blue-600 dark:text-blue-400 font-medium shrink-0 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                 >
                   Copy
                 </button>
               </div>
-              <ol className="text-sm text-gray-600 dark:text-slate-300 mt-1.5 space-y-1.5 list-decimal list-inside" start={3}>
-                <li>Select the latest version and click <span className="font-medium text-gray-900 dark:text-white">Add Package</span></li>
-              </ol>
+              <p className="text-sm text-gray-600 dark:text-slate-300 mt-1.5">
+                3. Select the latest version and click <span className="font-medium text-gray-900 dark:text-white">Add Package</span>
+              </p>
             </div>
           </div>
 
