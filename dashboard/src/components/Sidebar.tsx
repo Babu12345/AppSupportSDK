@@ -224,8 +224,8 @@ export function Sidebar({ user, organizations, currentOrg, onSwitchOrg, onCreate
             </Link>
           ))}
 
-          {/* Divider + Home link */}
-          <div className="pt-3 mt-3 border-t border-gray-200 dark:border-slate-700">
+          {/* Divider + Home & Contact links */}
+          <div className="pt-3 mt-3 border-t border-gray-200 dark:border-slate-700 space-y-1">
             <Link
               href="/"
               onClick={onClose}
@@ -235,6 +235,16 @@ export function Sidebar({ user, organizations, currentOrg, onSwitchOrg, onCreate
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
               Home Page
+            </Link>
+            <Link
+              href="/contact"
+              onClick={onClose}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Contact
             </Link>
           </div>
         </nav>
