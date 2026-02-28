@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { UpgradeModal } from '@/components/UpgradeModal';
 import {
   getKnowledgeSources,
   createKnowledgeSource,
   updateKnowledgeSource,
   deleteKnowledgeSource,
   KnowledgeSource,
+  LimitReachedError,
 } from '@/lib/api';
 
 export default function KnowledgePage() {
@@ -18,6 +20,7 @@ export default function KnowledgePage() {
   const [formData, setFormData] = useState({ title: '', content: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     loadSources();
@@ -62,7 +65,12 @@ export default function KnowledgePage() {
       setShowModal(false);
       await loadSources();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
+      if (err instanceof LimitReachedError) {
+        setShowModal(false);
+        setShowUpgrade(true);
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to save');
+      }
     } finally {
       setSaving(false);
     }
@@ -240,6 +248,7 @@ export default function KnowledgePage() {
           </div>
         </div>
       )}
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} limitType="knowledge" />
     </DashboardLayout>
   );
 }

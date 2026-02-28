@@ -24,6 +24,23 @@ export function setCurrentOrgId(orgId: string): void {
   localStorage.setItem('currentOrgId', orgId);
 }
 
+// Custom error for limit-reached responses
+export class LimitReachedError extends Error {
+  limitType: 'conversations' | 'organizations' | 'knowledge';
+  constructor(message: string, limitType: 'conversations' | 'organizations' | 'knowledge') {
+    super(message);
+    this.name = 'LimitReachedError';
+    this.limitType = limitType;
+  }
+}
+
+// Detect limit type from the endpoint
+function detectLimitType(endpoint: string): 'conversations' | 'organizations' | 'knowledge' {
+  if (endpoint.includes('/chat')) return 'conversations';
+  if (endpoint.includes('/organizations')) return 'organizations';
+  return 'knowledge';
+}
+
 // API request helper
 export async function apiRequest<T>(
   endpoint: string,
@@ -50,6 +67,9 @@ export async function apiRequest<T>(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Request failed' }));
+    if (error.limit_reached) {
+      throw new LimitReachedError(error.error || 'Plan limit reached', detectLimitType(endpoint));
+    }
     throw new Error(error.error || 'Request failed');
   }
 

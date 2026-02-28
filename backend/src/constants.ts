@@ -1,16 +1,23 @@
 export const PRO_PRICE_MONTHLY = 5;
 
+function envInt(key: string, fallback: number): number {
+  const val = process.env[key];
+  if (!val) return fallback;
+  const parsed = parseInt(val, 10);
+  return isNaN(parsed) ? fallback : parsed;
+}
+
 export const SUBSCRIPTION_LIMITS = {
   free: {
-    conversationsPerMonth: 100,
-    maxOrganizations: 1,
-    maxKnowledgeSources: 5,
+    conversationsPerMonth: envInt('FREE_CONVERSATIONS_PER_MONTH', 100),
+    maxOrganizations: envInt('FREE_MAX_ORGANIZATIONS', 1),
+    maxKnowledgeSources: envInt('FREE_MAX_KNOWLEDGE_SOURCES', 5),
   },
   pro: {
     conversationsPerMonth: Infinity,
     maxOrganizations: Infinity,
     maxKnowledgeSources: Infinity,
   },
-} as const;
+};
 
 export type SubscriptionTier = 'free' | 'pro';

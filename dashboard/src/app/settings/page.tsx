@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { UpgradeModal } from '@/components/UpgradeModal';
 import {
   getCurrentOrgId,
   getOrganizations,
   createOrganization,
   clearToken,
   Organization,
+  LimitReachedError,
 } from '@/lib/api';
 
 export default function SettingsPage() {
@@ -17,6 +19,7 @@ export default function SettingsPage() {
   const [showNewOrgModal, setShowNewOrgModal] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     loadOrganizations();
@@ -59,7 +62,12 @@ export default function SettingsPage() {
       setNewOrgName('');
       await loadOrganizations();
     } catch (error) {
-      console.error('Failed to create organization:', error);
+      if (error instanceof LimitReachedError) {
+        setShowNewOrgModal(false);
+        setShowUpgrade(true);
+      } else {
+        console.error('Failed to create organization:', error);
+      }
     } finally {
       setCreating(false);
     }
@@ -270,6 +278,7 @@ SupportKit.presentChat(from: viewController)
           </div>
         </div>
       )}
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} limitType="organizations" />
     </DashboardLayout>
   );
 }
