@@ -159,7 +159,7 @@ export default function LandingPage() {
               },
               {
                 title: 'Knowledge Base',
-                description: 'Upload FAQs, docs, and help articles. The AI learns your product inside and out — no complex RAG pipelines needed.',
+                description: 'Write articles manually, import from any URL, or connect GitHub to auto-summarize your repo\'s README and docs. The AI learns your product inside and out.',
                 icon: (
                   <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                 ),
@@ -224,7 +224,7 @@ export default function LandingPage() {
               {
                 step: '1',
                 title: 'Add Your Knowledge',
-                description: 'Upload FAQs, help articles, or product docs through the dashboard. The AI learns everything about your product.',
+                description: 'Write articles manually, import from any URL, or connect a GitHub repo. AI summarizes your content into user-facing knowledge automatically.',
               },
               {
                 step: '2',
@@ -245,6 +245,64 @@ export default function LandingPage() {
                 <p className="text-gray-600 dark:text-slate-400 leading-relaxed">{item.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Knowledge Base Demo */}
+      <section className="py-20 md:py-28">
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+            {/* Left: Text */}
+            <div className="flex-1 text-center lg:text-left">
+              <span className="inline-block text-xs font-semibold bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full mb-4">
+                Knowledge Base
+              </span>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Import From Anywhere
+              </h2>
+              <p className="mt-4 text-lg text-gray-600 dark:text-slate-400">
+                Build your knowledge base in seconds. Connect a GitHub repo and AI automatically summarizes your README, docs, wiki, and release notes into user-friendly support articles.
+              </p>
+              <ul className="mt-6 space-y-3 text-left">
+                {[
+                  { label: 'Manual', desc: 'Write custom articles directly' },
+                  { label: 'URL Import', desc: 'Scrape any webpage into a knowledge article' },
+                  { label: 'GitHub', desc: 'Auto-summarize repos with AI — README, docs, wiki, releases' },
+                ].map((item) => (
+                  <li key={item.label} className="flex items-start gap-3">
+                    <svg className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-sm text-gray-700 dark:text-slate-300">
+                      <strong>{item.label}:</strong> {item.desc}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Right: Video */}
+            <div className="flex-shrink-0 w-full lg:w-auto">
+              <div className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden max-w-lg mx-auto">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-400" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                    <div className="w-3 h-3 rounded-full bg-green-400" />
+                  </div>
+                  <span className="text-xs text-gray-400 dark:text-slate-500 ml-2">Knowledge Base — Dashboard</span>
+                </div>
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full"
+                >
+                  <source src="/knowledge-demo.mp4" type="video/mp4" />
+                </video>
+              </div>
+            </div>
           </div>
         </div>
       </section>
