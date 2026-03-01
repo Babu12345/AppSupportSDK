@@ -331,8 +331,9 @@ ${readmeContent || 'No content available.'}`;
 
   try {
     const response = await getClient().messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 2048,
+      // Haiku: fast + cheap. Switch to 'claude-sonnet-4-5-20250929' for higher quality summaries.
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1500,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     });
