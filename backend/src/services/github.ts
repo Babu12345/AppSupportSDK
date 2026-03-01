@@ -206,7 +206,6 @@ async function fetchDocsFolder(owner: string, repo: string, token?: string): Pro
     const items = await listResponse.json() as Array<{
       name: string;
       type: string;
-      download_url: string | null;
       size: number;
     }>;
 
@@ -218,13 +217,16 @@ async function fetchDocsFolder(owner: string, repo: string, token?: string): Pro
 
     const fileContents = await Promise.all(
       markdownFiles.map(async (file) => {
-        if (!file.download_url) return '';
         try {
-          const res = await fetch(file.download_url, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-          });
+          // Use the Contents API (returns base64) — works for both public and private repos
+          const res = await fetch(
+            `${GITHUB_API}/repos/${owner}/${repo}/contents/docs/${file.name}`,
+            { headers: githubHeaders(token) }
+          );
           if (!res.ok) return '';
-          const text = await res.text();
+          const data = await res.json() as { content?: string; encoding?: string };
+          if (!data.content) return '';
+          const text = Buffer.from(data.content, 'base64').toString('utf-8');
           return `### ${file.name}\n\n${text}`;
         } catch {
           return '';
