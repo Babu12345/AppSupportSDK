@@ -162,6 +162,7 @@ export async function createKnowledgeSource(data: {
   title: string;
   content: string;
   sourceType?: string;
+  sourceUrl?: string;
 }): Promise<{ source: KnowledgeSource }> {
   return apiRequest('/v1/knowledge', {
     method: 'POST',
@@ -181,6 +182,24 @@ export async function updateKnowledgeSource(
 
 export async function deleteKnowledgeSource(id: string): Promise<void> {
   await apiRequest(`/v1/knowledge/${id}`, { method: 'DELETE' });
+}
+
+export interface ScrapeResult {
+  title: string;
+  content: string;
+  url: string;
+  contentLength: number;
+}
+
+export async function scrapeUrlPreview(url: string): Promise<ScrapeResult> {
+  return apiRequest('/v1/knowledge/scrape', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  });
+}
+
+export async function refreshKnowledgeSource(id: string): Promise<{ source: KnowledgeSource }> {
+  return apiRequest(`/v1/knowledge/${id}/refresh`, { method: 'POST' });
 }
 
 // Billing API

@@ -8,6 +8,8 @@ import {
   createKnowledgeSource,
   updateKnowledgeSource,
   deleteKnowledgeSource,
+  scrapeUrlPreview,
+  refreshKnowledgeSource,
   KnowledgeSource,
   LimitReachedError,
 } from '@/lib/api';
@@ -21,6 +23,11 @@ export default function KnowledgePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [sourceMode, setSourceMode] = useState<'manual' | 'url'>('manual');
+  const [urlInput, setUrlInput] = useState('');
+  const [scraping, setScraping] = useState(false);
+  const [scrapeError, setScrapeError] = useState('');
+  const [refreshingId, setRefreshingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadSources();
@@ -40,6 +47,9 @@ export default function KnowledgePage() {
   function openCreateModal() {
     setEditingSource(null);
     setFormData({ title: '', content: '' });
+    setSourceMode('manual');
+    setUrlInput('');
+    setScrapeError('');
     setError('');
     setShowModal(true);
   }
@@ -51,6 +61,33 @@ export default function KnowledgePage() {
     setShowModal(true);
   }
 
+  async function handleScrape() {
+    if (!urlInput.trim()) return;
+    setScraping(true);
+    setScrapeError('');
+
+    try {
+      const result = await scrapeUrlPreview(urlInput.trim());
+      setFormData({ title: result.title, content: result.content });
+    } catch (err) {
+      setScrapeError(err instanceof Error ? err.message : 'Failed to fetch URL content');
+    } finally {
+      setScraping(false);
+    }
+  }
+
+  async function handleRefresh(id: string) {
+    setRefreshingId(id);
+    try {
+      await refreshKnowledgeSource(id);
+      await loadSources();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to refresh');
+    } finally {
+      setRefreshingId(null);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -60,7 +97,11 @@ export default function KnowledgePage() {
       if (editingSource) {
         await updateKnowledgeSource(editingSource.id, formData);
       } else {
-        await createKnowledgeSource(formData);
+        await createKnowledgeSource({
+          ...formData,
+          sourceType: sourceMode,
+          sourceUrl: sourceMode === 'url' ? urlInput.trim() : undefined,
+        });
       }
       setShowModal(false);
       await loadSources();
@@ -143,12 +184,44 @@ export default function KnowledgePage() {
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 dark:text-white">
-                    {source.title}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-gray-900 dark:text-white">
+                      {source.title}
+                    </h3>
+                    {source.sourceType === 'url' && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        URL
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-500 dark:text-slate-400 text-sm mt-1 line-clamp-2">
                     {source.content}
                   </p>
+                  {source.sourceType === 'url' && source.sourceUrl && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <a
+                        href={source.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 dark:text-blue-400 text-xs hover:underline truncate max-w-xs"
+                      >
+                        {source.sourceUrl}
+                      </a>
+                      <button
+                        onClick={() => handleRefresh(source.id)}
+                        disabled={refreshingId === source.id}
+                        className="text-gray-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 p-1 rounded transition-colors disabled:opacity-50"
+                        title="Re-fetch content from URL"
+                      >
+                        <svg className={`w-3.5 h-3.5 ${refreshingId === source.id ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
                   <p className="text-gray-400 dark:text-slate-500 text-xs mt-2">
                     Added {new Date(source.createdAt).toLocaleDateString()}
                   </p>
@@ -192,6 +265,63 @@ export default function KnowledgePage() {
                 {error && (
                   <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm">
                     {error}
+                  </div>
+                )}
+
+                {/* Source type toggle */}
+                {!editingSource && (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSourceMode('manual')}
+                      className={`flex-1 h-9 text-sm font-medium rounded-lg border transition-colors ${
+                        sourceMode === 'manual'
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
+                          : 'border-gray-300 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      Manual
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSourceMode('url')}
+                      className={`flex-1 h-9 text-sm font-medium rounded-lg border transition-colors ${
+                        sourceMode === 'url'
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
+                          : 'border-gray-300 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      From URL
+                    </button>
+                  </div>
+                )}
+
+                {/* URL input */}
+                {sourceMode === 'url' && !editingSource && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
+                      URL
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        placeholder="https://example.com/help/getting-started"
+                        className="flex-1 h-10 px-3 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleScrape}
+                        disabled={scraping || !urlInput.trim()}
+                        className="h-10 px-4 bg-gray-800 dark:bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-gray-900 dark:hover:bg-slate-500 transition-colors disabled:opacity-50 shrink-0"
+                      >
+                        {scraping ? 'Fetching...' : 'Fetch'}
+                      </button>
+                    </div>
+                    {scrapeError && (
+                      <p className="text-red-500 dark:text-red-400 text-sm">{scrapeError}</p>
+                    )}
                   </div>
                 )}
 

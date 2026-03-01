@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config';
 import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '../constants';
+import { scrapeUrl } from '../services/scraper.js';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -102,6 +103,31 @@ router.get('/bundle', authenticate, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// POST /v1/knowledge/scrape - Preview scraped content from a URL
+router.post('/scrape', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { url } = req.body;
+
+    if (!url || typeof url !== 'string') {
+      res.status(400).json({ error: 'url is required' });
+      return;
+    }
+
+    const result = await scrapeUrl(url);
+
+    res.json({
+      title: result.title,
+      content: result.content,
+      url: result.url,
+      contentLength: result.contentLength,
+    });
+  } catch (error) {
+    console.error('Scrape error:', error);
+    const message = error instanceof Error ? error.message : 'Failed to scrape URL';
+    res.status(422).json({ error: message });
+  }
+});
+
 // POST /v1/knowledge - Add a new knowledge source
 router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
@@ -175,6 +201,43 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Update knowledge error:', error);
     res.status(500).json({ error: 'Failed to update knowledge source' });
+  }
+});
+
+// POST /v1/knowledge/:id/refresh - Re-fetch content from source URL
+router.post('/:id/refresh', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const id = req.params.id as string;
+
+    const existing = await prisma.knowledgeSource.findFirst({
+      where: { id, organizationId: req.organization!.id },
+    });
+
+    if (!existing) {
+      res.status(404).json({ error: 'Knowledge source not found' });
+      return;
+    }
+
+    if (existing.sourceType !== 'url' || !existing.sourceUrl) {
+      res.status(400).json({ error: 'This knowledge source is not URL-based' });
+      return;
+    }
+
+    const result = await scrapeUrl(existing.sourceUrl);
+
+    const source = await prisma.knowledgeSource.update({
+      where: { id },
+      data: {
+        title: result.title,
+        content: result.content,
+      },
+    });
+
+    res.json({ source });
+  } catch (error) {
+    console.error('Refresh error:', error);
+    const message = error instanceof Error ? error.message : 'Failed to refresh URL content';
+    res.status(422).json({ error: message });
   }
 });
 
