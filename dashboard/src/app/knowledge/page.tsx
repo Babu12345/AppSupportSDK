@@ -512,6 +512,19 @@ export default function KnowledgePage() {
                           )}
                         </div>
 
+                        <p className="text-gray-400 dark:text-slate-500 text-xs">
+                          Don&apos;t see a repo?{' '}
+                          <a
+                            href="https://github.com/apps/appsupportsdk/installations/new"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300 underline"
+                          >
+                            Update repository access
+                          </a>
+                          {' '}on GitHub.
+                        </p>
+
                         {/* Selected repo indicator */}
                         {selectedRepo && (
                           <div className="flex items-center gap-2 text-sm">

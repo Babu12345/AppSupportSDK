@@ -96,12 +96,8 @@ export default function SettingsPage() {
 
   function handleConnectGitHub() {
     const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-    if (!clientId) {
-      alert('GitHub OAuth is not configured');
-      return;
-    }
     const redirectUri = `${window.location.origin}/settings`;
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=repo`;
   }
 
   async function handleDisconnectGitHub() {

@@ -477,37 +477,40 @@ router.get('/github/repos', async (req: Request, res: Response) => {
       return;
     }
 
-    const query = (req.query.q as string || '').trim();
-    const page = parseInt(req.query.page as string) || 1;
-    const perPage = 30;
+    const query = (req.query.q as string || '').trim().toLowerCase();
+    const headers = {
+      'Authorization': `Bearer ${user.githubToken}`,
+      'Accept': 'application/vnd.github+json',
+      'User-Agent': 'SupportKit/1.0',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
 
-    let url: string;
+    // Paginate through all user repos (up to 500)
+    let allItems: Array<Record<string, unknown>> = [];
+    for (let page = 1; page <= 5; page++) {
+      const url = `https://api.github.com/user/repos?sort=updated&per_page=100&page=${page}&affiliation=owner,collaborator,organization_member`;
+      const ghRes = await fetch(url, { headers });
+
+      if (!ghRes.ok) {
+        res.status(400).json({ error: 'Failed to fetch repositories from GitHub' });
+        return;
+      }
+
+      const pageData = await ghRes.json() as Array<Record<string, unknown>>;
+      allItems.push(...pageData);
+      if (pageData.length < 100) break; // Last page
+    }
+
+    // Filter by search query if provided
     if (query) {
-      // Search across all repos the user can access
-      url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}+in:name,description&sort=updated&per_page=${perPage}&page=${page}`;
-    } else {
-      // List user's repos sorted by most recently updated
-      url = `https://api.github.com/user/repos?sort=updated&per_page=${perPage}&page=${page}&affiliation=owner,collaborator,organization_member`;
+      allItems = allItems.filter((r) => {
+        const name = (r.full_name as string || '').toLowerCase();
+        const desc = (r.description as string || '').toLowerCase();
+        return name.includes(query) || desc.includes(query);
+      });
     }
 
-    const ghRes = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${user.githubToken}`,
-        'Accept': 'application/vnd.github+json',
-        'User-Agent': 'SupportKit/1.0',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-    });
-
-    if (!ghRes.ok) {
-      res.status(400).json({ error: 'Failed to fetch repositories from GitHub' });
-      return;
-    }
-
-    const data = await ghRes.json();
-    const items = query ? (data as { items: unknown[] }).items : data;
-
-    const repos = (items as Array<{
+    const repos = (allItems as Array<{
       full_name: string;
       name: string;
       owner: { login: string; avatar_url: string };
@@ -517,7 +520,7 @@ router.get('/github/repos', async (req: Request, res: Response) => {
       stargazers_count: number;
       updated_at: string;
       html_url: string;
-    }>).map(r => ({
+    }>).slice(0, 30).map(r => ({
       fullName: r.full_name,
       name: r.name,
       owner: r.owner.login,
