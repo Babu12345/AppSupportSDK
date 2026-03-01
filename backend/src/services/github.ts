@@ -15,6 +15,35 @@ function getClient(): Anthropic {
 const MAX_CHARS = 50000;
 const GITHUB_API = 'https://api.github.com';
 
+export interface GitHubContentSources {
+  readme: boolean;
+  wiki: boolean;
+  docs: boolean;
+  releases: boolean;
+}
+
+export const DEFAULT_GITHUB_SOURCES: GitHubContentSources = {
+  readme: true,
+  wiki: false,
+  docs: false,
+  releases: false,
+};
+
+export function parseSourceConfig(configJson: string | null | undefined): GitHubContentSources {
+  if (!configJson) return DEFAULT_GITHUB_SOURCES;
+  try {
+    const parsed = JSON.parse(configJson);
+    return {
+      readme: typeof parsed.readme === 'boolean' ? parsed.readme : true,
+      wiki: typeof parsed.wiki === 'boolean' ? parsed.wiki : false,
+      docs: typeof parsed.docs === 'boolean' ? parsed.docs : false,
+      releases: typeof parsed.releases === 'boolean' ? parsed.releases : false,
+    };
+  } catch {
+    return DEFAULT_GITHUB_SOURCES;
+  }
+}
+
 export interface GitHubRepoInfo {
   owner: string;
   repo: string;
@@ -23,6 +52,7 @@ export interface GitHubRepoInfo {
   topics: string[];
   stars: number;
   url: string;
+  hasWiki: boolean;
 }
 
 export interface GitHubScrapeResult {
@@ -97,6 +127,7 @@ async function fetchRepoMetadata(owner: string, repo: string, token?: string): P
       topics: data.topics || [],
       stars: data.stargazers_count || 0,
       url: data.html_url,
+      hasWiki: data.has_wiki || false,
     };
   } finally {
     clearTimeout(timeout);
@@ -132,18 +163,141 @@ async function fetchReadme(owner: string, repo: string, token?: string): Promise
   }
 }
 
+async function fetchWikiContent(owner: string, repo: string, token?: string): Promise<string> {
+  const extensions = ['md', 'mediawiki', 'asciidoc', 'rst', 'org', 'textile', 'rdoc', 'creole', 'pod'];
+
+  for (const ext of extensions) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const url = `https://raw.githubusercontent.com/wiki/${owner}/${repo}/Home.${ext}`;
+      const response = await fetch(url, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (response.ok) {
+        const content = await response.text();
+        if (content.length > MAX_CHARS / 4) {
+          return content.substring(0, MAX_CHARS / 4) + '\n\n[Wiki content truncated]';
+        }
+        return content;
+      }
+    } catch {
+      clearTimeout(timeout);
+    }
+  }
+  return '';
+}
+
+async function fetchDocsFolder(owner: string, repo: string, token?: string): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const listResponse = await fetch(
+      `${GITHUB_API}/repos/${owner}/${repo}/contents/docs`,
+      { headers: githubHeaders(token), signal: controller.signal }
+    );
+
+    if (!listResponse.ok) return '';
+
+    const items = await listResponse.json() as Array<{
+      name: string;
+      type: string;
+      download_url: string | null;
+      size: number;
+    }>;
+
+    const markdownFiles = items
+      .filter(item => item.type === 'file' && /\.(md|mdx|markdown|txt|rst)$/i.test(item.name))
+      .slice(0, 10);
+
+    if (markdownFiles.length === 0) return '';
+
+    const fileContents = await Promise.all(
+      markdownFiles.map(async (file) => {
+        if (!file.download_url) return '';
+        try {
+          const res = await fetch(file.download_url, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          });
+          if (!res.ok) return '';
+          const text = await res.text();
+          return `### ${file.name}\n\n${text}`;
+        } catch {
+          return '';
+        }
+      })
+    );
+
+    const combined = fileContents.filter(Boolean).join('\n\n---\n\n');
+    if (combined.length > MAX_CHARS / 4) {
+      return combined.substring(0, MAX_CHARS / 4) + '\n\n[Docs content truncated]';
+    }
+    return combined;
+  } catch {
+    return '';
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchReleaseNotes(owner: string, repo: string, token?: string): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const response = await fetch(
+      `${GITHUB_API}/repos/${owner}/${repo}/releases?per_page=5`,
+      { headers: githubHeaders(token), signal: controller.signal }
+    );
+
+    if (!response.ok) return '';
+
+    const releases = await response.json() as Array<{
+      tag_name: string;
+      name: string | null;
+      body: string | null;
+      published_at: string;
+    }>;
+
+    if (releases.length === 0) return '';
+
+    const notes = releases.map(r => {
+      const title = r.name || r.tag_name;
+      const date = new Date(r.published_at).toLocaleDateString();
+      return `### ${title} (${date})\n\n${r.body || 'No release notes.'}`;
+    }).join('\n\n---\n\n');
+
+    if (notes.length > MAX_CHARS / 4) {
+      return notes.substring(0, MAX_CHARS / 4) + '\n\n[Release notes truncated]';
+    }
+    return notes;
+  } catch {
+    return '';
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function summarizeForUsers(readmeContent: string, repoInfo: GitHubRepoInfo): Promise<string> {
   const systemPrompt = `You are a technical writer creating a user-facing knowledge article about a software application.
-Your job is to summarize the README and repository information into a helpful guide for END USERS of this application.
+Your job is to summarize the repository information into a helpful guide for END USERS of this application.
+The input may contain multiple content sections: README, Wiki pages, Documentation files, and Release Notes.
+Synthesize all available information into a single cohesive article.
 
 IMPORTANT RULES:
 1. Focus ONLY on user-facing information: what the app does, how to use it, key features, getting started steps
-2. DO NOT include: source code snippets, implementation details, architecture decisions, internal APIs, build instructions, CI/CD details, contributor guidelines
-3. DO NOT include: proprietary algorithms, database schemas, deployment configs, environment variables, developer setup
-4. Write in clear, non-technical language when possible
-5. Use markdown formatting with headers and bullet points
-6. If the README is primarily code/technical, extract only the user-relevant parts
-7. If very little user-facing content exists, note what the app does based on available information and keep it brief
+2. If release notes are included, summarize recent changes in a "What's New" section
+3. If wiki/docs are included, incorporate relevant user-facing instructions
+4. DO NOT include: source code snippets, implementation details, architecture decisions, internal APIs, build instructions, CI/CD details, contributor guidelines
+5. DO NOT include: proprietary algorithms, database schemas, deployment configs, environment variables, developer setup
+6. Write in clear, non-technical language when possible
+7. Use markdown formatting with headers and bullet points
+8. If the content is primarily code/technical, extract only the user-relevant parts
+9. If very little user-facing content exists, note what the app does based on available information and keep it brief
 
 Output a clean, helpful knowledge article that could be shown to end users seeking support.`;
 
@@ -153,8 +307,8 @@ Language: ${repoInfo.language || 'Unknown'}
 Topics: ${repoInfo.topics.join(', ') || 'None'}
 Stars: ${repoInfo.stars}
 
-README content:
-${readmeContent || 'No README available.'}`;
+Content:
+${readmeContent || 'No content available.'}`;
 
   try {
     const response = await getClient().messages.create({
@@ -172,19 +326,61 @@ ${readmeContent || 'No README available.'}`;
   }
 }
 
-export async function fetchAndSummarizeRepo(url: string, token?: string): Promise<GitHubScrapeResult> {
+export async function fetchAndSummarizeRepo(
+  url: string,
+  token?: string,
+  sources?: GitHubContentSources
+): Promise<GitHubScrapeResult> {
   const { owner, repo } = parseGitHubUrl(url);
+  const config = sources || DEFAULT_GITHUB_SOURCES;
 
-  const [repoInfo, readmeContent] = await Promise.all([
+  // Always fetch metadata; conditionally fetch content sources in parallel
+  const fetchPromises: Promise<unknown>[] = [
     fetchRepoMetadata(owner, repo, token),
-    fetchReadme(owner, repo, token),
-  ]);
+  ];
+  const sourceKeys: string[] = ['metadata'];
 
-  if (!readmeContent && !repoInfo.description) {
-    throw new Error('This repository has no README and no description. Cannot generate a knowledge article.');
+  if (config.readme) {
+    fetchPromises.push(fetchReadme(owner, repo, token));
+    sourceKeys.push('readme');
+  }
+  if (config.wiki) {
+    fetchPromises.push(fetchWikiContent(owner, repo, token));
+    sourceKeys.push('wiki');
+  }
+  if (config.docs) {
+    fetchPromises.push(fetchDocsFolder(owner, repo, token));
+    sourceKeys.push('docs');
+  }
+  if (config.releases) {
+    fetchPromises.push(fetchReleaseNotes(owner, repo, token));
+    sourceKeys.push('releases');
   }
 
-  const summary = await summarizeForUsers(readmeContent, repoInfo);
+  const results = await Promise.all(fetchPromises);
+  const repoInfo = results[0] as GitHubRepoInfo;
+
+  // Build combined content from selected sources
+  const contentSections: string[] = [];
+  for (let i = 1; i < results.length; i++) {
+    const content = results[i] as string;
+    if (content) {
+      const label = sourceKeys[i].toUpperCase();
+      contentSections.push(`## [${label}]\n\n${content}`);
+    }
+  }
+
+  const combinedContent = contentSections.join('\n\n---\n\n');
+
+  if (!combinedContent && !repoInfo.description) {
+    throw new Error('No content found for the selected sources. Try enabling additional content sources.');
+  }
+
+  const cappedContent = combinedContent.length > MAX_CHARS
+    ? combinedContent.substring(0, MAX_CHARS) + '\n\n[Content truncated]'
+    : combinedContent;
+
+  const summary = await summarizeForUsers(cappedContent, repoInfo);
 
   return {
     title: repoInfo.description

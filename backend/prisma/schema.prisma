@@ -50,6 +50,7 @@ model KnowledgeSource {
   content        String       // The actual knowledge content (markdown)
   sourceType     String       // "manual", "url", "file", "github"
   sourceUrl      String?      // Original URL if scraped
+  sourceConfig   String?      // JSON config for source-specific options (e.g., GitHub content toggles)
 
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt

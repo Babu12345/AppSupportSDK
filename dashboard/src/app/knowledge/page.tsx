@@ -16,6 +16,7 @@ import {
   getGitHubRepos,
   KnowledgeSource,
   GitHubRepo,
+  GitHubContentSources,
   LimitReachedError,
 } from '@/lib/api';
 
@@ -41,6 +42,12 @@ export default function KnowledgePage() {
   const [repoSearch, setRepoSearch] = useState('');
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
+  const [githubSources, setGithubSources] = useState<GitHubContentSources>({
+    readme: true,
+    wiki: false,
+    docs: false,
+    releases: false,
+  });
 
   useEffect(() => {
     loadSources();
@@ -61,6 +68,7 @@ export default function KnowledgePage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [repoSearch, sourceMode, githubConnected]);
+
 
   async function loadSources() {
     try {
@@ -83,6 +91,7 @@ export default function KnowledgePage() {
     setSelectedRepo(null);
     setRepoSearch('');
     setGithubRepos([]);
+    setGithubSources({ readme: true, wiki: false, docs: false, releases: false });
     setShowModal(true);
   }
 
@@ -93,6 +102,21 @@ export default function KnowledgePage() {
     setUrlInput(source.sourceUrl || '');
     setScrapeError('');
     setError('');
+    if (source.sourceType === 'github' && source.sourceConfig) {
+      try {
+        const parsed = JSON.parse(source.sourceConfig);
+        setGithubSources({
+          readme: parsed.readme !== false,
+          wiki: parsed.wiki === true,
+          docs: parsed.docs === true,
+          releases: parsed.releases === true,
+        });
+      } catch {
+        setGithubSources({ readme: true, wiki: false, docs: false, releases: false });
+      }
+    } else {
+      setGithubSources({ readme: true, wiki: false, docs: false, releases: false });
+    }
     setShowModal(true);
   }
 
@@ -142,7 +166,7 @@ export default function KnowledgePage() {
     setScrapeError('');
 
     try {
-      const result = await scrapeGitHubPreview(repo.url);
+      const result = await scrapeGitHubPreview(repo.url, githubSources);
       setFormData({ title: result.title, content: result.content });
     } catch (err) {
       setScrapeError(err instanceof Error ? err.message : 'Failed to fetch GitHub repository');
@@ -174,12 +198,14 @@ export default function KnowledgePage() {
           ...formData,
           sourceType: sourceMode,
           sourceUrl: sourceMode !== 'manual' ? urlInput.trim() : undefined,
+          sourceConfig: sourceMode === 'github' ? githubSources : undefined,
         });
       } else {
         await createKnowledgeSource({
           ...formData,
           sourceType: sourceMode,
           sourceUrl: sourceMode !== 'manual' ? urlInput.trim() : undefined,
+          sourceConfig: sourceMode === 'github' ? githubSources : undefined,
         });
       }
       setShowModal(false);
@@ -276,12 +302,29 @@ export default function KnowledgePage() {
                       </span>
                     )}
                     {source.sourceType === 'github' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-medium rounded-full">
-                        <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
-                          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-                        </svg>
-                        GitHub
-                      </span>
+                      <>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-medium rounded-full">
+                          <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                          </svg>
+                          GitHub
+                        </span>
+                        {source.sourceConfig && (() => {
+                          try {
+                            const cfg = JSON.parse(source.sourceConfig!);
+                            const labels: string[] = [];
+                            if (cfg.readme) labels.push('README');
+                            if (cfg.wiki) labels.push('Wiki');
+                            if (cfg.docs) labels.push('Docs');
+                            if (cfg.releases) labels.push('Releases');
+                            return labels.length > 1 ? (
+                              <span className="text-xs text-gray-400 dark:text-slate-500">
+                                ({labels.join(', ')})
+                              </span>
+                            ) : null;
+                          } catch { return null; }
+                        })()}
+                      </>
                     )}
                   </div>
                   <p className="text-gray-500 dark:text-slate-400 text-sm mt-1 line-clamp-2">
@@ -524,6 +567,57 @@ export default function KnowledgePage() {
                           </a>
                           {' '}on GitHub.
                         </p>
+
+                        {/* Content source toggles */}
+                        <div className="border border-gray-200 dark:border-slate-600 rounded-lg p-3">
+                          <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                            Content to include
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {([
+                              { key: 'readme' as const, label: 'README' },
+                              { key: 'wiki' as const, label: 'Wiki Pages' },
+                              { key: 'docs' as const, label: 'Docs Folder' },
+                              { key: 'releases' as const, label: 'Release Notes' },
+                            ]).map(({ key, label }) => (
+                              <label
+                                key={key}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                                  githubSources[key]
+                                    ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-700'
+                                    : 'border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={githubSources[key]}
+                                  onChange={(e) =>
+                                    setGithubSources((prev) => ({ ...prev, [key]: e.target.checked }))
+                                  }
+                                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                />
+                                <span className="text-sm text-gray-700 dark:text-slate-300">{label}</span>
+                              </label>
+                            ))}
+                          </div>
+                          {!githubSources.readme && !githubSources.wiki &&
+                           !githubSources.docs && !githubSources.releases && (
+                            <p className="text-red-500 text-xs mt-1">Select at least one content source</p>
+                          )}
+                        </div>
+
+                        {/* Re-summarize button */}
+                        {selectedRepo && formData.content && !summarizing && (
+                          <button
+                            type="button"
+                            onClick={() => handleRepoSelect(selectedRepo)}
+                            disabled={!githubSources.readme && !githubSources.wiki &&
+                                      !githubSources.docs && !githubSources.releases}
+                            className="w-full h-9 text-sm font-medium text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors disabled:opacity-50"
+                          >
+                            Re-summarize with selected sources
+                          </button>
+                        )}
 
                         {/* Selected repo indicator */}
                         {selectedRepo && (

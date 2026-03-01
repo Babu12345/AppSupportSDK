@@ -144,12 +144,20 @@ export async function deleteOrganization(id: string): Promise<void> {
 }
 
 // Knowledge API
+export interface GitHubContentSources {
+  readme: boolean;
+  wiki: boolean;
+  docs: boolean;
+  releases: boolean;
+}
+
 export interface KnowledgeSource {
   id: string;
   title: string;
   content: string;
   sourceType: string;
   sourceUrl?: string;
+  sourceConfig?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -163,6 +171,7 @@ export async function createKnowledgeSource(data: {
   content: string;
   sourceType?: string;
   sourceUrl?: string;
+  sourceConfig?: GitHubContentSources;
 }): Promise<{ source: KnowledgeSource }> {
   return apiRequest('/v1/knowledge', {
     method: 'POST',
@@ -172,7 +181,7 @@ export async function createKnowledgeSource(data: {
 
 export async function updateKnowledgeSource(
   id: string,
-  data: { title?: string; content?: string; sourceType?: string; sourceUrl?: string }
+  data: { title?: string; content?: string; sourceType?: string; sourceUrl?: string; sourceConfig?: GitHubContentSources }
 ): Promise<{ source: KnowledgeSource }> {
   return apiRequest(`/v1/knowledge/${id}`, {
     method: 'PUT',
@@ -202,10 +211,10 @@ export async function refreshKnowledgeSource(id: string): Promise<{ source: Know
   return apiRequest(`/v1/knowledge/${id}/refresh`, { method: 'POST' });
 }
 
-export async function scrapeGitHubPreview(url: string): Promise<ScrapeResult> {
+export async function scrapeGitHubPreview(url: string, sources?: GitHubContentSources): Promise<ScrapeResult> {
   return apiRequest('/v1/knowledge/scrape-github', {
     method: 'POST',
-    body: JSON.stringify({ url }),
+    body: JSON.stringify({ url, sources }),
   });
 }
 

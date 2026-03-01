@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config';
 import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '../constants';
 import { scrapeUrl } from '../services/scraper.js';
-import { fetchAndSummarizeRepo } from '../services/github.js';
+import { fetchAndSummarizeRepo, parseSourceConfig, GitHubContentSources } from '../services/github.js';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -134,11 +134,27 @@ router.post('/scrape', authenticate, async (req: AuthRequest, res: Response) => 
 // POST /v1/knowledge/scrape-github - Preview GitHub repo as knowledge source
 router.post('/scrape-github', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const { url } = req.body;
+    const { url, sources } = req.body;
 
     if (!url || typeof url !== 'string') {
       res.status(400).json({ error: 'url is required' });
       return;
+    }
+
+    // Validate sources if provided
+    let contentSources: GitHubContentSources | undefined;
+    if (sources && typeof sources === 'object') {
+      contentSources = {
+        readme: sources.readme !== false,
+        wiki: sources.wiki === true,
+        docs: sources.docs === true,
+        releases: sources.releases === true,
+      };
+      if (!contentSources.readme && !contentSources.wiki &&
+          !contentSources.docs && !contentSources.releases) {
+        res.status(400).json({ error: 'At least one content source must be selected' });
+        return;
+      }
     }
 
     // Look up user's GitHub token if available
@@ -153,7 +169,7 @@ router.post('/scrape-github', authenticate, async (req: AuthRequest, res: Respon
       }
     }
 
-    const result = await fetchAndSummarizeRepo(url, githubToken);
+    const result = await fetchAndSummarizeRepo(url, githubToken, contentSources);
 
     res.json({
       title: result.title,
@@ -171,7 +187,7 @@ router.post('/scrape-github', authenticate, async (req: AuthRequest, res: Respon
 // POST /v1/knowledge - Add a new knowledge source
 router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const { title, content, sourceType = 'manual', sourceUrl } = req.body;
+    const { title, content, sourceType = 'manual', sourceUrl, sourceConfig } = req.body;
 
     if (!title || !content) {
       res.status(400).json({ error: 'title and content are required' });
@@ -207,6 +223,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
         content,
         sourceType,
         sourceUrl,
+        sourceConfig: sourceConfig ? JSON.stringify(sourceConfig) : null,
       },
     });
 
@@ -221,7 +238,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-    const { title, content, sourceType, sourceUrl } = req.body;
+    const { title, content, sourceType, sourceUrl, sourceConfig } = req.body;
 
     const existing = await prisma.knowledgeSource.findFirst({
       where: { id, organizationId: req.organization!.id },
@@ -234,7 +251,10 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
 
     const source = await prisma.knowledgeSource.update({
       where: { id },
-      data: { title, content, sourceType, sourceUrl },
+      data: {
+        title, content, sourceType, sourceUrl,
+        sourceConfig: sourceConfig !== undefined ? JSON.stringify(sourceConfig) : undefined,
+      },
     });
 
     res.json({ source });
@@ -275,7 +295,8 @@ router.post('/:id/refresh', authenticate, async (req: AuthRequest, res: Response
         });
         if (user?.githubToken) githubToken = user.githubToken;
       }
-      const result = await fetchAndSummarizeRepo(existing.sourceUrl, githubToken);
+      const contentSources = parseSourceConfig(existing.sourceConfig);
+      const result = await fetchAndSummarizeRepo(existing.sourceUrl, githubToken, contentSources);
       updatedTitle = result.title;
       updatedContent = result.content;
     } else {
