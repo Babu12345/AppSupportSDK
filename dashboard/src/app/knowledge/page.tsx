@@ -3,18 +3,24 @@
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { UpgradeModal } from '@/components/UpgradeModal';
+import { useRouter } from 'next/navigation';
 import {
   getKnowledgeSources,
   createKnowledgeSource,
   updateKnowledgeSource,
   deleteKnowledgeSource,
   scrapeUrlPreview,
+  scrapeGitHubPreview,
   refreshKnowledgeSource,
+  getGitHubStatus,
+  getGitHubRepos,
   KnowledgeSource,
+  GitHubRepo,
   LimitReachedError,
 } from '@/lib/api';
 
 export default function KnowledgePage() {
+  const router = useRouter();
   const [sources, setSources] = useState<KnowledgeSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -23,15 +29,38 @@ export default function KnowledgePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showUpgrade, setShowUpgrade] = useState(false);
-  const [sourceMode, setSourceMode] = useState<'manual' | 'url'>('manual');
+  const [sourceMode, setSourceMode] = useState<'manual' | 'url' | 'github'>('manual');
+  const [summarizing, setSummarizing] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [scraping, setScraping] = useState(false);
   const [scrapeError, setScrapeError] = useState('');
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
+  // GitHub repo picker state
+  const [githubConnected, setGithubConnected] = useState<boolean | null>(null);
+  const [githubRepos, setGithubRepos] = useState<GitHubRepo[]>([]);
+  const [repoSearch, setRepoSearch] = useState('');
+  const [loadingRepos, setLoadingRepos] = useState(false);
+  const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
 
   useEffect(() => {
     loadSources();
   }, []);
+
+  // Check GitHub status when switching to GitHub mode
+  useEffect(() => {
+    if (sourceMode === 'github' && githubConnected === null) {
+      checkGitHubStatus();
+    }
+  }, [sourceMode]);
+
+  // Debounced repo search
+  useEffect(() => {
+    if (sourceMode !== 'github' || !githubConnected) return;
+    const timer = setTimeout(() => {
+      loadGitHubRepos(repoSearch || undefined);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [repoSearch, sourceMode, githubConnected]);
 
   async function loadSources() {
     try {
@@ -51,13 +80,16 @@ export default function KnowledgePage() {
     setUrlInput('');
     setScrapeError('');
     setError('');
+    setSelectedRepo(null);
+    setRepoSearch('');
+    setGithubRepos([]);
     setShowModal(true);
   }
 
   function openEditModal(source: KnowledgeSource) {
     setEditingSource(source);
     setFormData({ title: source.title, content: source.content });
-    setSourceMode(source.sourceType === 'url' ? 'url' : 'manual');
+    setSourceMode(source.sourceType === 'github' ? 'github' : source.sourceType === 'url' ? 'url' : 'manual');
     setUrlInput(source.sourceUrl || '');
     setScrapeError('');
     setError('');
@@ -76,6 +108,46 @@ export default function KnowledgePage() {
       setScrapeError(err instanceof Error ? err.message : 'Failed to fetch URL content');
     } finally {
       setScraping(false);
+    }
+  }
+
+  async function loadGitHubRepos(query?: string) {
+    setLoadingRepos(true);
+    try {
+      const data = await getGitHubRepos(query);
+      setGithubRepos(data.repos);
+    } catch {
+      setGithubRepos([]);
+    } finally {
+      setLoadingRepos(false);
+    }
+  }
+
+  async function checkGitHubStatus() {
+    try {
+      const status = await getGitHubStatus();
+      setGithubConnected(status.connected);
+      if (status.connected) {
+        loadGitHubRepos();
+      }
+    } catch {
+      setGithubConnected(false);
+    }
+  }
+
+  async function handleRepoSelect(repo: GitHubRepo) {
+    setSelectedRepo(repo);
+    setUrlInput(repo.url);
+    setSummarizing(true);
+    setScrapeError('');
+
+    try {
+      const result = await scrapeGitHubPreview(repo.url);
+      setFormData({ title: result.title, content: result.content });
+    } catch (err) {
+      setScrapeError(err instanceof Error ? err.message : 'Failed to fetch GitHub repository');
+    } finally {
+      setSummarizing(false);
     }
   }
 
@@ -101,13 +173,13 @@ export default function KnowledgePage() {
         await updateKnowledgeSource(editingSource.id, {
           ...formData,
           sourceType: sourceMode,
-          sourceUrl: sourceMode === 'url' ? urlInput.trim() : undefined,
+          sourceUrl: sourceMode !== 'manual' ? urlInput.trim() : undefined,
         });
       } else {
         await createKnowledgeSource({
           ...formData,
           sourceType: sourceMode,
-          sourceUrl: sourceMode === 'url' ? urlInput.trim() : undefined,
+          sourceUrl: sourceMode !== 'manual' ? urlInput.trim() : undefined,
         });
       }
       setShowModal(false);
@@ -203,11 +275,19 @@ export default function KnowledgePage() {
                         URL
                       </span>
                     )}
+                    {source.sourceType === 'github' && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-medium rounded-full">
+                        <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                        GitHub
+                      </span>
+                    )}
                   </div>
                   <p className="text-gray-500 dark:text-slate-400 text-sm mt-1 line-clamp-2">
                     {source.content}
                   </p>
-                  {source.sourceType === 'url' && source.sourceUrl && (
+                  {['url', 'github'].includes(source.sourceType) && source.sourceUrl && (
                     <div className="flex items-center gap-2 mt-1">
                       <a
                         href={source.sourceUrl}
@@ -299,6 +379,17 @@ export default function KnowledgePage() {
                     >
                       From URL
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setSourceMode('github')}
+                      className={`flex-1 h-9 text-sm font-medium rounded-lg border transition-colors ${
+                        sourceMode === 'github'
+                          ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300'
+                          : 'border-gray-300 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      GitHub
+                    </button>
                   </div>
 
                 {/* URL input */}
@@ -326,6 +417,124 @@ export default function KnowledgePage() {
                     </div>
                     {scrapeError && (
                       <p className="text-red-500 dark:text-red-400 text-sm">{scrapeError}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* GitHub repo picker */}
+                {sourceMode === 'github' && (
+                  <div className="space-y-3">
+                    {githubConnected === null ? (
+                      <div className="flex items-center justify-center py-6">
+                        <svg className="animate-spin h-5 w-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    ) : !githubConnected ? (
+                      <div className="border border-gray-200 dark:border-slate-600 rounded-lg p-6 text-center">
+                        <svg className="w-8 h-8 mx-auto mb-3 text-gray-400 dark:text-slate-500" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                        <p className="text-sm text-gray-600 dark:text-slate-300 mb-3">
+                          Connect your GitHub account to browse and import repositories.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => { setShowModal(false); router.push('/settings'); }}
+                          className="h-9 px-4 bg-gray-900 dark:bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-black dark:hover:bg-slate-500 transition-colors"
+                        >
+                          Connect GitHub in Settings
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Search input */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                            Search Repositories
+                          </label>
+                          <div className="relative">
+                            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                              type="text"
+                              value={repoSearch}
+                              onChange={(e) => setRepoSearch(e.target.value)}
+                              placeholder="Search your repos..."
+                              className="w-full h-10 pl-10 pr-3 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Repo list */}
+                        <div className="border border-gray-200 dark:border-slate-600 rounded-lg max-h-48 overflow-y-auto">
+                          {loadingRepos ? (
+                            <div className="flex items-center justify-center py-6">
+                              <svg className="animate-spin h-5 w-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            </div>
+                          ) : githubRepos.length === 0 ? (
+                            <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">
+                              {repoSearch ? 'No repos found' : 'No repositories'}
+                            </p>
+                          ) : (
+                            githubRepos.map((repo) => (
+                              <button
+                                key={repo.fullName}
+                                type="button"
+                                onClick={() => handleRepoSelect(repo)}
+                                disabled={summarizing}
+                                className={`w-full text-left px-3 py-2.5 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors border-b border-gray-100 dark:border-slate-700 last:border-b-0 disabled:opacity-50 ${
+                                  selectedRepo?.fullName === repo.fullName ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <img src={repo.ownerAvatar} alt="" className="w-5 h-5 rounded-full" />
+                                  <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{repo.fullName}</span>
+                                  {repo.private && (
+                                    <svg className="w-3.5 h-3.5 text-gray-400 dark:text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                  )}
+                                  {repo.language && (
+                                    <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{repo.language}</span>
+                                  )}
+                                </div>
+                                {repo.description && (
+                                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-1 pl-7">{repo.description}</p>
+                                )}
+                              </button>
+                            ))
+                          )}
+                        </div>
+
+                        {/* Selected repo indicator */}
+                        {selectedRepo && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <svg className={`w-4 h-4 ${summarizing ? 'animate-spin text-purple-600' : 'text-green-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              {summarizing ? (
+                                <>
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </>
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              )}
+                            </svg>
+                            <span className="text-gray-600 dark:text-slate-300">
+                              {summarizing ? `Summarizing ${selectedRepo.fullName}...` : `${selectedRepo.fullName} — ready to save`}
+                            </span>
+                          </div>
+                        )}
+
+                        {scrapeError && (
+                          <p className="text-red-500 dark:text-red-400 text-sm">{scrapeError}</p>
+                        )}
+                      </>
                     )}
                   </div>
                 )}

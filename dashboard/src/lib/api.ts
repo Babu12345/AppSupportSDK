@@ -202,6 +202,52 @@ export async function refreshKnowledgeSource(id: string): Promise<{ source: Know
   return apiRequest(`/v1/knowledge/${id}/refresh`, { method: 'POST' });
 }
 
+export async function scrapeGitHubPreview(url: string): Promise<ScrapeResult> {
+  return apiRequest('/v1/knowledge/scrape-github', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  });
+}
+
+// GitHub OAuth API
+export interface GitHubRepo {
+  fullName: string;
+  name: string;
+  owner: string;
+  ownerAvatar: string;
+  description: string | null;
+  private: boolean;
+  language: string | null;
+  stars: number;
+  updatedAt: string;
+  url: string;
+}
+
+export async function getGitHubRepos(query?: string): Promise<{ repos: GitHubRepo[] }> {
+  const params = query ? `?q=${encodeURIComponent(query)}` : '';
+  return apiRequest(`/v1/auth/github/repos${params}`);
+}
+
+export interface GitHubStatus {
+  connected: boolean;
+  username?: string;
+}
+
+export async function getGitHubStatus(): Promise<GitHubStatus> {
+  return apiRequest('/v1/auth/github/status');
+}
+
+export async function connectGitHub(code: string): Promise<GitHubStatus> {
+  return apiRequest('/v1/auth/github/callback', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}
+
+export async function disconnectGitHub(): Promise<{ connected: false }> {
+  return apiRequest('/v1/auth/github', { method: 'DELETE' });
+}
+
 // Billing API
 export interface UsageStats {
   tier: string;

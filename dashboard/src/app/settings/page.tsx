@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import {
@@ -8,6 +9,9 @@ import {
   getOrganizations,
   createOrganization,
   clearToken,
+  getGitHubStatus,
+  connectGitHub,
+  disconnectGitHub,
   Organization,
   LimitReachedError,
 } from '@/lib/api';
@@ -20,10 +24,49 @@ export default function SettingsPage() {
   const [newOrgName, setNewOrgName] = useState('');
   const [creating, setCreating] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [githubConnected, setGithubConnected] = useState(false);
+  const [githubUsername, setGithubUsername] = useState('');
+  const [githubLoading, setGithubLoading] = useState(true);
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const loadGitHubStatus = useCallback(async () => {
+    try {
+      const status = await getGitHubStatus();
+      setGithubConnected(status.connected);
+      setGithubUsername(status.username || '');
+    } catch {
+      // Not critical
+    } finally {
+      setGithubLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadOrganizations();
-  }, []);
+    loadGitHubStatus();
+  }, [loadGitHubStatus]);
+
+  // Handle GitHub OAuth callback
+  useEffect(() => {
+    const code = searchParams.get('code');
+    if (!code) return;
+
+    // Clear the query params
+    router.replace('/settings');
+
+    (async () => {
+      try {
+        const result = await connectGitHub(code);
+        setGithubConnected(result.connected);
+        setGithubUsername(result.username || '');
+      } catch (err) {
+        console.error('GitHub connect failed:', err);
+      }
+    })();
+  }, [searchParams, router]);
 
   async function loadOrganizations() {
     try {
@@ -49,6 +92,29 @@ export default function SettingsPage() {
   function maskApiKey(key: string) {
     if (key.length < 20) return key;
     return key.slice(0, 12) + '...' + key.slice(-8);
+  }
+
+  function handleConnectGitHub() {
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+    if (!clientId) {
+      alert('GitHub OAuth is not configured');
+      return;
+    }
+    const redirectUri = `${window.location.origin}/settings`;
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo&redirect_uri=${encodeURIComponent(redirectUri)}`;
+  }
+
+  async function handleDisconnectGitHub() {
+    setDisconnecting(true);
+    try {
+      await disconnectGitHub();
+      setGithubConnected(false);
+      setGithubUsername('');
+    } catch (err) {
+      console.error('Failed to disconnect GitHub:', err);
+    } finally {
+      setDisconnecting(false);
+    }
   }
 
   async function handleCreateOrg(e: React.FormEvent) {
@@ -204,6 +270,56 @@ SupportKit.presentChat(from: viewController)
 }`}
                 </pre>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Connected Accounts */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+            <h2 className="font-semibold text-gray-900 dark:text-white">Connected Accounts</h2>
+          </div>
+          <div className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-900 dark:bg-white rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white dark:text-gray-900" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">GitHub</h3>
+                  {githubLoading ? (
+                    <p className="text-gray-400 dark:text-slate-500 text-sm">Loading...</p>
+                  ) : githubConnected ? (
+                    <p className="text-green-600 dark:text-green-400 text-sm">
+                      Connected as <span className="font-medium">{githubUsername}</span>
+                    </p>
+                  ) : (
+                    <p className="text-gray-500 dark:text-slate-400 text-sm">
+                      Connect to import knowledge from private repos
+                    </p>
+                  )}
+                </div>
+              </div>
+              {!githubLoading && (
+                githubConnected ? (
+                  <button
+                    onClick={handleDisconnectGitHub}
+                    disabled={disconnecting}
+                    className="h-9 px-4 border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-400 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                  >
+                    {disconnecting ? 'Disconnecting...' : 'Disconnect'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleConnectGitHub}
+                    className="h-9 px-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
+                  >
+                    Connect
+                  </button>
+                )
+              )}
             </div>
           </div>
         </div>

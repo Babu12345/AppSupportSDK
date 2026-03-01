@@ -12,6 +12,8 @@ model User {
   email         String   @unique
   passwordHash  String?
   googleId      String?  @unique
+  githubId      Int?     @unique
+  githubToken   String?
   name          String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -46,7 +48,7 @@ model KnowledgeSource {
 
   title          String
   content        String       // The actual knowledge content (markdown)
-  sourceType     String       // "manual", "url", "file"
+  sourceType     String       // "manual", "url", "file", "github"
   sourceUrl      String?      // Original URL if scraped
 
   createdAt      DateTime     @default(now())

@@ -4,12 +4,14 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config';
 import { SUBSCRIPTION_LIMITS, SubscriptionTier } from '../constants';
 import { scrapeUrl } from '../services/scraper.js';
+import { fetchAndSummarizeRepo } from '../services/github.js';
 
 const router = Router();
 const prisma = new PrismaClient();
 
 interface AuthRequest extends Request {
   organization?: { id: string; name: string };
+  userId?: string;
 }
 
 // Middleware to authenticate via API key OR JWT + orgId
@@ -59,6 +61,7 @@ async function authenticate(req: AuthRequest, res: Response, next: NextFunction)
     }
 
     req.organization = { id: organization.id, name: organization.name };
+    req.userId = decoded.userId;
     next();
   } catch {
     res.status(401).json({ error: 'Invalid token' });
@@ -124,6 +127,43 @@ router.post('/scrape', authenticate, async (req: AuthRequest, res: Response) => 
   } catch (error) {
     console.error('Scrape error:', error);
     const message = error instanceof Error ? error.message : 'Failed to scrape URL';
+    res.status(422).json({ error: message });
+  }
+});
+
+// POST /v1/knowledge/scrape-github - Preview GitHub repo as knowledge source
+router.post('/scrape-github', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { url } = req.body;
+
+    if (!url || typeof url !== 'string') {
+      res.status(400).json({ error: 'url is required' });
+      return;
+    }
+
+    // Look up user's GitHub token if available
+    let githubToken: string | undefined;
+    if (req.userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { githubToken: true },
+      });
+      if (user?.githubToken) {
+        githubToken = user.githubToken;
+      }
+    }
+
+    const result = await fetchAndSummarizeRepo(url, githubToken);
+
+    res.json({
+      title: result.title,
+      content: result.content,
+      url: result.url,
+      contentLength: result.contentLength,
+    });
+  } catch (error) {
+    console.error('GitHub scrape error:', error);
+    const message = error instanceof Error ? error.message : 'Failed to fetch GitHub repository';
     res.status(422).json({ error: message });
   }
 });
@@ -218,18 +258,37 @@ router.post('/:id/refresh', authenticate, async (req: AuthRequest, res: Response
       return;
     }
 
-    if (existing.sourceType !== 'url' || !existing.sourceUrl) {
+    if (!existing.sourceUrl || !['url', 'github'].includes(existing.sourceType)) {
       res.status(400).json({ error: 'This knowledge source is not URL-based' });
       return;
     }
 
-    const result = await scrapeUrl(existing.sourceUrl);
+    let updatedTitle: string;
+    let updatedContent: string;
+
+    if (existing.sourceType === 'github') {
+      let githubToken: string | undefined;
+      if (req.userId) {
+        const user = await prisma.user.findUnique({
+          where: { id: req.userId },
+          select: { githubToken: true },
+        });
+        if (user?.githubToken) githubToken = user.githubToken;
+      }
+      const result = await fetchAndSummarizeRepo(existing.sourceUrl, githubToken);
+      updatedTitle = result.title;
+      updatedContent = result.content;
+    } else {
+      const result = await scrapeUrl(existing.sourceUrl);
+      updatedTitle = result.title;
+      updatedContent = result.content;
+    }
 
     const source = await prisma.knowledgeSource.update({
       where: { id },
       data: {
-        title: result.title,
-        content: result.content,
+        title: updatedTitle,
+        content: updatedContent,
       },
     });
 

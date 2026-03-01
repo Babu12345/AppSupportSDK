@@ -331,4 +331,235 @@ router.get('/usage', async (req: Request, res: Response) => {
   }
 });
 
+// GET /v1/auth/github/status - Check if user has connected GitHub
+router.get('/github/status', async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+    });
+
+    if (!user) {
+      res.status(401).json({ error: 'User not found' });
+      return;
+    }
+
+    if (!user.githubId || !user.githubToken) {
+      res.json({ connected: false });
+      return;
+    }
+
+    // Fetch username from GitHub to display
+    const ghRes = await fetch('https://api.github.com/user', {
+      headers: {
+        'Authorization': `Bearer ${user.githubToken}`,
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'SupportKit/1.0',
+      },
+    });
+
+    if (!ghRes.ok) {
+      // Token may have been revoked
+      res.json({ connected: false });
+      return;
+    }
+
+    const ghUser = await ghRes.json() as { login: string };
+    res.json({ connected: true, username: ghUser.login });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// POST /v1/auth/github/callback - Exchange GitHub OAuth code for token
+router.post('/github/callback', async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    const jwtToken = authHeader.substring(7);
+    const decoded = jwt.verify(jwtToken, JWT_SECRET) as { userId: string };
+
+    const { code } = req.body;
+    if (!code) {
+      res.status(400).json({ error: 'GitHub authorization code is required' });
+      return;
+    }
+
+    const clientId = process.env.GITHUB_CLIENT_ID;
+    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+    if (!clientId || !clientSecret) {
+      res.status(500).json({ error: 'GitHub OAuth is not configured' });
+      return;
+    }
+
+    // Exchange code for access token
+    const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+      }),
+    });
+
+    const tokenData = await tokenRes.json() as { access_token?: string; error?: string };
+    if (!tokenData.access_token) {
+      res.status(400).json({ error: tokenData.error || 'Failed to exchange GitHub code' });
+      return;
+    }
+
+    // Fetch GitHub user info
+    const userRes = await fetch('https://api.github.com/user', {
+      headers: {
+        'Authorization': `Bearer ${tokenData.access_token}`,
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'SupportKit/1.0',
+      },
+    });
+
+    if (!userRes.ok) {
+      res.status(400).json({ error: 'Failed to fetch GitHub user info' });
+      return;
+    }
+
+    const ghUser = await userRes.json() as { id: number; login: string };
+
+    // Store GitHub credentials on user
+    await prisma.user.update({
+      where: { id: decoded.userId },
+      data: {
+        githubId: ghUser.id,
+        githubToken: tokenData.access_token,
+      },
+    });
+
+    res.json({ connected: true, username: ghUser.login });
+  } catch (error) {
+    console.error('GitHub callback error:', error);
+    res.status(500).json({ error: 'GitHub authentication failed' });
+  }
+});
+
+// GET /v1/auth/github/repos - List user's GitHub repos
+router.get('/github/repos', async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+    });
+
+    if (!user || !user.githubToken) {
+      res.status(400).json({ error: 'GitHub not connected' });
+      return;
+    }
+
+    const query = (req.query.q as string || '').trim();
+    const page = parseInt(req.query.page as string) || 1;
+    const perPage = 30;
+
+    let url: string;
+    if (query) {
+      // Search across all repos the user can access
+      url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}+in:name,description&sort=updated&per_page=${perPage}&page=${page}`;
+    } else {
+      // List user's repos sorted by most recently updated
+      url = `https://api.github.com/user/repos?sort=updated&per_page=${perPage}&page=${page}&affiliation=owner,collaborator,organization_member`;
+    }
+
+    const ghRes = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${user.githubToken}`,
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'SupportKit/1.0',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+
+    if (!ghRes.ok) {
+      res.status(400).json({ error: 'Failed to fetch repositories from GitHub' });
+      return;
+    }
+
+    const data = await ghRes.json();
+    const items = query ? (data as { items: unknown[] }).items : data;
+
+    const repos = (items as Array<{
+      full_name: string;
+      name: string;
+      owner: { login: string; avatar_url: string };
+      description: string | null;
+      private: boolean;
+      language: string | null;
+      stargazers_count: number;
+      updated_at: string;
+      html_url: string;
+    }>).map(r => ({
+      fullName: r.full_name,
+      name: r.name,
+      owner: r.owner.login,
+      ownerAvatar: r.owner.avatar_url,
+      description: r.description,
+      private: r.private,
+      language: r.language,
+      stars: r.stargazers_count,
+      updatedAt: r.updated_at,
+      url: r.html_url,
+    }));
+
+    res.json({ repos });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// DELETE /v1/auth/github - Disconnect GitHub account
+router.delete('/github', async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+
+    await prisma.user.update({
+      where: { id: decoded.userId },
+      data: {
+        githubId: null,
+        githubToken: null,
+      },
+    });
+
+    res.json({ connected: false });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
 export { router as authRouter };
