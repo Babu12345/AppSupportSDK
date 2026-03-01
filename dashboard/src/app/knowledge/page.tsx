@@ -337,12 +337,12 @@ export default function KnowledgePage() {
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-gray-900 dark:text-white">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-medium text-gray-900 dark:text-white truncate max-w-[200px] sm:max-w-none">
                       {source.title}
                     </h3>
                     {source.sourceType === 'url' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full shrink-0">
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                         </svg>
@@ -351,7 +351,7 @@ export default function KnowledgePage() {
                     )}
                     {source.sourceType === 'github' && (
                       <>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-medium rounded-full">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-medium rounded-full shrink-0">
                           <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
                             <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
                           </svg>
@@ -366,7 +366,7 @@ export default function KnowledgePage() {
                             if (cfg.docs) labels.push('Docs');
                             if (cfg.releases) labels.push('Releases');
                             return labels.length > 1 ? (
-                              <span className="text-xs text-gray-400 dark:text-slate-500">
+                              <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">
                                 ({labels.join(', ')})
                               </span>
                             ) : null;
@@ -384,7 +384,7 @@ export default function KnowledgePage() {
                         href={source.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-500 dark:text-blue-400 text-xs hover:underline truncate max-w-xs"
+                        className="text-blue-500 dark:text-blue-400 text-xs hover:underline truncate max-w-[180px] sm:max-w-xs"
                       >
                         {source.sourceUrl}
                       </a>
@@ -404,10 +404,10 @@ export default function KnowledgePage() {
                     Added {new Date(source.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex gap-1 ml-4">
+                <div className="flex gap-1 ml-2 sm:ml-4 shrink-0">
                   <button
                     onClick={() => openEditModal(source)}
-                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                    className="p-1.5 sm:p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -415,7 +415,7 @@ export default function KnowledgePage() {
                   </button>
                   <button
                     onClick={() => handleDelete(source.id)}
-                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                    className="p-1.5 sm:p-2 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
