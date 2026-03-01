@@ -108,7 +108,7 @@ async function fetchRepoMetadata(owner: string, repo: string, token?: string): P
       throw new Error(`Repository not found: ${owner}/${repo}. Make sure it exists and is accessible.`);
     }
     if (response.status === 403) {
-      const body = await response.json().catch(() => ({}));
+      const body = await response.json().catch(() => ({})) as { message?: string };
       if (body.message?.includes('rate limit')) {
         throw new Error('GitHub API rate limit reached. Please try again in a few minutes.');
       }
@@ -118,7 +118,10 @@ async function fetchRepoMetadata(owner: string, repo: string, token?: string): P
       throw new Error(`GitHub API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as {
+      description?: string; language?: string; topics?: string[];
+      stargazers_count?: number; html_url: string; has_wiki?: boolean;
+    };
     return {
       owner,
       repo,
@@ -151,7 +154,7 @@ async function fetchReadme(owner: string, repo: string, token?: string): Promise
       return ''; // Gracefully degrade
     }
 
-    const data = await response.json();
+    const data = await response.json() as { content: string };
     const content = Buffer.from(data.content, 'base64').toString('utf-8');
 
     if (content.length > MAX_CHARS) {
