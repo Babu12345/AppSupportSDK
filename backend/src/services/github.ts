@@ -191,43 +191,57 @@ async function fetchWikiContent(owner: string, repo: string, token?: string): Pr
   return '';
 }
 
+const DOCS_FILE_PATTERN = /\.(md|mdx|markdown|txt|rst|html|htm)$/i;
+
 async function fetchDocsFolder(owner: string, repo: string, token?: string): Promise<string> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  const maxFiles = 15;
 
-  try {
-    const listResponse = await fetch(
-      `${GITHUB_API}/repos/${owner}/${repo}/contents/docs`,
+  // Recursively collect doc files from a directory (1 level deep for subdirs)
+  async function listDocFiles(path: string, depth: number): Promise<Array<{ name: string; path: string }>> {
+    const res = await fetch(
+      `${GITHUB_API}/repos/${owner}/${repo}/contents/${path}`,
       { headers: githubHeaders(token), signal: controller.signal }
     );
+    if (!res.ok) return [];
 
-    if (!listResponse.ok) return '';
+    const items = await res.json() as Array<{ name: string; path: string; type: string }>;
+    const files: Array<{ name: string; path: string }> = [];
 
-    const items = await listResponse.json() as Array<{
-      name: string;
-      type: string;
-      size: number;
-    }>;
+    for (const item of items) {
+      if (item.type === 'file' && DOCS_FILE_PATTERN.test(item.name)) {
+        files.push({ name: item.name, path: item.path });
+      } else if (item.type === 'dir' && depth < 2) {
+        const subFiles = await listDocFiles(item.path, depth + 1);
+        files.push(...subFiles);
+      }
+    }
+    return files;
+  }
 
-    const markdownFiles = items
-      .filter(item => item.type === 'file' && /\.(md|mdx|markdown|txt|rst)$/i.test(item.name))
-      .slice(0, 10);
+  try {
+    const docFiles = await listDocFiles('docs', 0);
+    const selected = docFiles.slice(0, maxFiles);
 
-    if (markdownFiles.length === 0) return '';
+    if (selected.length === 0) return '';
+
+    console.log(`[docs] Found ${docFiles.length} doc files, fetching ${selected.length}`);
 
     const fileContents = await Promise.all(
-      markdownFiles.map(async (file) => {
+      selected.map(async (file) => {
         try {
-          // Use the Contents API (returns base64) — works for both public and private repos
           const res = await fetch(
-            `${GITHUB_API}/repos/${owner}/${repo}/contents/docs/${file.name}`,
+            `${GITHUB_API}/repos/${owner}/${repo}/contents/${file.path}`,
             { headers: githubHeaders(token) }
           );
           if (!res.ok) return '';
           const data = await res.json() as { content?: string; encoding?: string };
           if (!data.content) return '';
           const text = Buffer.from(data.content, 'base64').toString('utf-8');
-          return `### ${file.name}\n\n${text}`;
+          // Use relative path from docs/ as the heading
+          const label = file.path.replace(/^docs\//, '');
+          return `### ${label}\n\n${text}`;
         } catch {
           return '';
         }
