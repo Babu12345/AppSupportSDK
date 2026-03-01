@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { useRouter } from 'next/navigation';
@@ -48,6 +48,7 @@ export default function KnowledgePage() {
     docs: false,
     releases: false,
   });
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     loadSources();
@@ -120,18 +121,32 @@ export default function KnowledgePage() {
     setShowModal(true);
   }
 
+  function cancelRequest() {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    setScraping(false);
+    setSummarizing(false);
+  }
+
   async function handleScrape() {
     if (!urlInput.trim()) return;
+    cancelRequest();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setScraping(true);
     setScrapeError('');
 
     try {
-      const result = await scrapeUrlPreview(urlInput.trim());
+      const result = await scrapeUrlPreview(urlInput.trim(), controller.signal);
       setFormData({ title: result.title, content: result.content });
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       setScrapeError(err instanceof Error ? err.message : 'Failed to fetch URL content');
     } finally {
       setScraping(false);
+      abortRef.current = null;
     }
   }
 
@@ -160,18 +175,23 @@ export default function KnowledgePage() {
   }
 
   async function handleRepoSelect(repo: GitHubRepo) {
+    cancelRequest();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setSelectedRepo(repo);
     setUrlInput(repo.url);
     setSummarizing(true);
     setScrapeError('');
 
     try {
-      const result = await scrapeGitHubPreview(repo.url, githubSources);
+      const result = await scrapeGitHubPreview(repo.url, githubSources, controller.signal);
       setFormData({ title: result.title, content: result.content });
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       setScrapeError(err instanceof Error ? err.message : 'Failed to fetch GitHub repository');
     } finally {
       setSummarizing(false);
+      abortRef.current = null;
     }
   }
 
@@ -449,14 +469,24 @@ export default function KnowledgePage() {
                         placeholder="https://example.com/help/getting-started"
                         className="flex-1 h-10 px-3 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
-                      <button
-                        type="button"
-                        onClick={handleScrape}
-                        disabled={scraping || !urlInput.trim()}
-                        className="h-10 px-4 bg-gray-800 dark:bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-gray-900 dark:hover:bg-slate-500 transition-colors disabled:opacity-50 shrink-0"
-                      >
-                        {scraping ? 'Fetching...' : 'Fetch'}
-                      </button>
+                      {scraping ? (
+                        <button
+                          type="button"
+                          onClick={cancelRequest}
+                          className="h-10 px-4 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors shrink-0"
+                        >
+                          Cancel
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleScrape}
+                          disabled={!urlInput.trim()}
+                          className="h-10 px-4 bg-gray-800 dark:bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-gray-900 dark:hover:bg-slate-500 transition-colors disabled:opacity-50 shrink-0"
+                        >
+                          Fetch
+                        </button>
+                      )}
                     </div>
                     {scrapeError && (
                       <p className="text-red-500 dark:text-red-400 text-sm">{scrapeError}</p>
@@ -632,9 +662,18 @@ export default function KnowledgePage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                               )}
                             </svg>
-                            <span className="text-gray-600 dark:text-slate-300">
+                            <span className="text-gray-600 dark:text-slate-300 flex-1">
                               {summarizing ? `Summarizing ${selectedRepo.fullName}...` : `${selectedRepo.fullName} — ready to save`}
                             </span>
+                            {summarizing && (
+                              <button
+                                type="button"
+                                onClick={cancelRequest}
+                                className="text-xs font-medium text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                              >
+                                Cancel
+                              </button>
+                            )}
                           </div>
                         )}
 

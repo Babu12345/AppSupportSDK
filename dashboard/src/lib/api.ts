@@ -200,10 +200,11 @@ export interface ScrapeResult {
   contentLength: number;
 }
 
-export async function scrapeUrlPreview(url: string): Promise<ScrapeResult> {
+export async function scrapeUrlPreview(url: string, signal?: AbortSignal): Promise<ScrapeResult> {
   return apiRequest('/v1/knowledge/scrape', {
     method: 'POST',
     body: JSON.stringify({ url }),
+    signal,
   });
 }
 
@@ -211,10 +212,11 @@ export async function refreshKnowledgeSource(id: string): Promise<{ source: Know
   return apiRequest(`/v1/knowledge/${id}/refresh`, { method: 'POST' });
 }
 
-export async function scrapeGitHubPreview(url: string, sources?: GitHubContentSources): Promise<ScrapeResult> {
+export async function scrapeGitHubPreview(url: string, sources?: GitHubContentSources, signal?: AbortSignal): Promise<ScrapeResult> {
   return apiRequest('/v1/knowledge/scrape-github', {
     method: 'POST',
     body: JSON.stringify({ url, sources }),
+    signal,
   });
 }
 
