@@ -103,6 +103,13 @@ export default function KnowledgePage() {
     setUrlInput(source.sourceUrl || '');
     setScrapeError('');
     setError('');
+    // Pre-fill repo search from sourceUrl (e.g. https://github.com/owner/repo -> owner/repo)
+    if (source.sourceType === 'github' && source.sourceUrl) {
+      const match = source.sourceUrl.match(/github\.com\/([^/]+\/[^/]+)/);
+      setRepoSearch(match ? match[1] : '');
+    } else {
+      setRepoSearch('');
+    }
     if (source.sourceType === 'github' && source.sourceConfig) {
       try {
         const parsed = JSON.parse(source.sourceConfig);
@@ -185,6 +192,27 @@ export default function KnowledgePage() {
 
     try {
       const result = await scrapeGitHubPreview(repo.url, githubSources, controller.signal);
+      setFormData({ title: result.title, content: result.content });
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      setScrapeError(err instanceof Error ? err.message : 'Failed to fetch GitHub repository');
+    } finally {
+      setSummarizing(false);
+      abortRef.current = null;
+    }
+  }
+
+  async function handleResummarize() {
+    const url = selectedRepo?.url || editingSource?.sourceUrl;
+    if (!url) return;
+    cancelRequest();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setSummarizing(true);
+    setScrapeError('');
+
+    try {
+      const result = await scrapeGitHubPreview(url, githubSources, controller.signal);
       setFormData({ title: result.title, content: result.content });
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
@@ -562,7 +590,9 @@ export default function KnowledgePage() {
                                 onClick={() => handleRepoSelect(repo)}
                                 disabled={summarizing}
                                 className={`w-full text-left px-3 py-2.5 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors border-b border-gray-100 dark:border-slate-700 last:border-b-0 disabled:opacity-50 ${
-                                  selectedRepo?.fullName === repo.fullName ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                                  selectedRepo?.fullName === repo.fullName ||
+                                  (!selectedRepo && editingSource?.sourceUrl?.includes(repo.fullName))
+                                    ? 'bg-purple-50 dark:bg-purple-900/20' : ''
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
@@ -637,10 +667,10 @@ export default function KnowledgePage() {
                         </div>
 
                         {/* Re-summarize button */}
-                        {selectedRepo && formData.content && !summarizing && (
+                        {(selectedRepo || editingSource?.sourceUrl) && formData.content && !summarizing && (
                           <button
                             type="button"
-                            onClick={() => handleRepoSelect(selectedRepo)}
+                            onClick={handleResummarize}
                             disabled={!githubSources.readme && !githubSources.wiki &&
                                       !githubSources.docs && !githubSources.releases}
                             className="w-full h-9 text-sm font-medium text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors disabled:opacity-50"
@@ -649,31 +679,23 @@ export default function KnowledgePage() {
                           </button>
                         )}
 
-                        {/* Selected repo indicator */}
-                        {selectedRepo && (
+                        {/* Summarizing indicator */}
+                        {summarizing && (
                           <div className="flex items-center gap-2 text-sm">
-                            <svg className={`w-4 h-4 ${summarizing ? 'animate-spin text-purple-600' : 'text-green-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              {summarizing ? (
-                                <>
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </>
-                              ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              )}
+                            <svg className="w-4 h-4 animate-spin text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                             <span className="text-gray-600 dark:text-slate-300 flex-1">
-                              {summarizing ? `Summarizing ${selectedRepo.fullName}...` : `${selectedRepo.fullName} — ready to save`}
+                              Summarizing...
                             </span>
-                            {summarizing && (
-                              <button
-                                type="button"
-                                onClick={cancelRequest}
-                                className="text-xs font-medium text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
-                              >
-                                Cancel
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              onClick={cancelRequest}
+                              className="text-xs font-medium text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              Cancel
+                            </button>
                           </div>
                         )}
 
