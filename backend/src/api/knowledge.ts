@@ -181,7 +181,7 @@ router.post('/', authenticate, async (req: AuthRequest, res: Response) => {
 router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-    const { title, content } = req.body;
+    const { title, content, sourceType, sourceUrl } = req.body;
 
     const existing = await prisma.knowledgeSource.findFirst({
       where: { id, organizationId: req.organization!.id },
@@ -194,7 +194,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
 
     const source = await prisma.knowledgeSource.update({
       where: { id },
-      data: { title, content },
+      data: { title, content, sourceType, sourceUrl },
     });
 
     res.json({ source });

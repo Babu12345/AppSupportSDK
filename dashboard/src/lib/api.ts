@@ -172,7 +172,7 @@ export async function createKnowledgeSource(data: {
 
 export async function updateKnowledgeSource(
   id: string,
-  data: { title?: string; content?: string }
+  data: { title?: string; content?: string; sourceType?: string; sourceUrl?: string }
 ): Promise<{ source: KnowledgeSource }> {
   return apiRequest(`/v1/knowledge/${id}`, {
     method: 'PUT',

@@ -57,6 +57,9 @@ export default function KnowledgePage() {
   function openEditModal(source: KnowledgeSource) {
     setEditingSource(source);
     setFormData({ title: source.title, content: source.content });
+    setSourceMode(source.sourceType === 'url' ? 'url' : 'manual');
+    setUrlInput(source.sourceUrl || '');
+    setScrapeError('');
     setError('');
     setShowModal(true);
   }
@@ -95,7 +98,11 @@ export default function KnowledgePage() {
 
     try {
       if (editingSource) {
-        await updateKnowledgeSource(editingSource.id, formData);
+        await updateKnowledgeSource(editingSource.id, {
+          ...formData,
+          sourceType: sourceMode,
+          sourceUrl: sourceMode === 'url' ? urlInput.trim() : undefined,
+        });
       } else {
         await createKnowledgeSource({
           ...formData,
@@ -269,8 +276,7 @@ export default function KnowledgePage() {
                 )}
 
                 {/* Source type toggle */}
-                {!editingSource && (
-                  <div className="flex gap-2">
+                <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => setSourceMode('manual')}
@@ -294,10 +300,9 @@ export default function KnowledgePage() {
                       From URL
                     </button>
                   </div>
-                )}
 
                 {/* URL input */}
-                {sourceMode === 'url' && !editingSource && (
+                {sourceMode === 'url' && (
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
                       URL
