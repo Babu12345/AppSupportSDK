@@ -81,7 +81,7 @@ export function Sidebar({ user, organizations, currentOrg, onSwitchOrg, onCreate
       <aside className={`
         fixed md:sticky top-0 left-0 z-50 md:z-auto
         w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700
-        min-h-screen h-screen md:h-auto flex flex-col
+        h-screen flex flex-col
         transform transition-transform duration-200 ease-in-out
         ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
       `}>
@@ -207,7 +207,7 @@ export function Sidebar({ user, organizations, currentOrg, onSwitchOrg, onCreate
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {navItems.map((item) => (
             <Link
               key={item.href}

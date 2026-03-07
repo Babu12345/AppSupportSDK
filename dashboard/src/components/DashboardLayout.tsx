@@ -27,7 +27,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-screen bg-gray-50 dark:bg-slate-950">
         {/* Skeleton sidebar */}
-        <aside className="hidden md:flex w-64 flex-col border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+        <aside className="hidden md:flex w-64 flex-col border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 sticky top-0 h-screen">
           <div className="h-16 flex items-center px-6 border-b border-gray-200 dark:border-slate-700">
             <div className="h-6 w-32 bg-gray-200 dark:bg-slate-700 rounded animate-pulse" />
           </div>
