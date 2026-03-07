@@ -388,7 +388,7 @@ export default function LandingPage() {
                 <span className="text-4xl font-bold">{PRO_PRICE}</span>
                 <span className="text-gray-500 dark:text-slate-400">/month</span>
               </div>
-              <Link href="/billing" className="block w-full h-11 flex items-center justify-center bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">Start Free Trial</Link>
+              <Link href="/login" className="block w-full h-11 flex items-center justify-center bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">Start Free Trial</Link>
               <ul className="mt-6 space-y-3">
                 {PRO_FEATURES.map(f => (
                   <li key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
